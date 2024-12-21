@@ -32,6 +32,7 @@ pub(crate) fn pairs_from_paths(
     names.extend(list_image_dir_names(right_path)?);
     names.retain(|filename| {
         filter_name
+            .as_ref()
             .map(|f| filename.to_string_lossy().contains(f))
             .unwrap_or(true)
     });

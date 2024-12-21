@@ -3,10 +3,12 @@
 
 use crate::difference::{compute_differences, Difference, ImageInfoResult, PairResult};
 use image::ImageError;
+use std::fs::File;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use crate::pair::pairs_from_paths;
-use crate::report::create_html_report;
+use crate::report::render_html_report;
 use thiserror::Error;
 
 mod difference;
@@ -14,8 +16,22 @@ mod fs;
 mod pair;
 mod report;
 
+#[cfg(feature = "review")]
+mod review;
+
 #[cfg(feature = "xtask-cli")]
 pub mod xtask_cli;
+
+#[cfg(feature = "review")]
+pub use review::start_review_server;
+
+#[cfg(not(feature = "review"))]
+pub fn start_review_server(_config: &ReportConfig, _port: u16) -> Result<()> {
+    Err(crate::Error::GenericError(
+        "Kompari is not compiled with review support, compile it with `--features=review`"
+            .to_string(),
+    ))
+}
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -27,19 +43,56 @@ pub enum Error {
 
     #[error("Image error")]
     ImageError(#[from] ImageError),
+
+    #[error("Error `{0}`")]
+    GenericError(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Default)]
-pub struct CompareConfig<'a> {
+pub struct DiffBuilder {
+    left_path: PathBuf,
+    right_path: PathBuf,
     ignore_match: bool,
     ignore_left_missing: bool,
     ignore_right_missing: bool,
-    filter_name: Option<&'a str>,
+    filter_name: Option<String>,
 }
 
-impl<'a> CompareConfig<'a> {
+impl DiffBuilder {
+    pub fn new(left_path: PathBuf, right_path: PathBuf) -> Self {
+        DiffBuilder {
+            left_path,
+            right_path,
+            ignore_match: false,
+            ignore_left_missing: false,
+            ignore_right_missing: false,
+            filter_name: None,
+        }
+    }
+
+    pub fn build(&self) -> Result<Diff> {
+        let pairs = pairs_from_paths(
+            &self.left_path,
+            &self.right_path,
+            self.filter_name.as_deref(),
+        )?;
+        let mut diffs = compute_differences(pairs);
+
+        if self.ignore_match {
+            diffs.retain(|pair| !matches!(pair.difference, Difference::None));
+        }
+
+        if self.ignore_left_missing {
+            diffs.retain(|pair| !matches!(pair.left_info, ImageInfoResult::Missing));
+        }
+
+        if self.ignore_right_missing {
+            diffs.retain(|pair| !matches!(pair.right_info, ImageInfoResult::Missing));
+        }
+        Ok(Diff { diffs })
+    }
+
     pub fn set_ignore_match(&mut self, value: bool) {
         self.ignore_match = value;
     }
@@ -52,69 +105,55 @@ impl<'a> CompareConfig<'a> {
         self.ignore_right_missing = value;
     }
 
-    pub fn set_filter_name(&mut self, value: Option<&'a str>) {
+    pub fn set_filter_name(&mut self, value: Option<String>) {
         self.filter_name = value;
     }
 }
 
-pub struct ReportConfig<'a> {
-    left_title: &'a str,
-    right_title: &'a str,
+pub struct ReportConfig {
+    left_title: String,
+    right_title: String,
     embed_images: bool,
+    is_review: bool,
 }
 
-impl Default for ReportConfig<'_> {
+impl Default for ReportConfig {
     fn default() -> Self {
         ReportConfig {
-            left_title: "Left image",
-            right_title: "Right image",
+            left_title: "Left image".to_string(),
+            right_title: "Right image".to_string(),
             embed_images: false,
+            is_review: false,
         }
     }
 }
 
-impl<'a> ReportConfig<'a> {
-    pub fn set_left_title(&mut self, title: &'a str) {
-        self.left_title = title;
+impl ReportConfig {
+    pub fn set_left_title<S: ToString>(&mut self, title: S) {
+        self.left_title = title.to_string();
     }
 
-    pub fn set_right_title(&mut self, title: &'a str) {
-        self.right_title = title;
+    pub fn set_right_title<S: ToString>(&mut self, title: S) {
+        self.right_title = title.to_string();
     }
 
     pub fn set_embed_images(&mut self, embed_images: bool) {
         self.embed_images = embed_images;
     }
+
+    pub fn set_review(&mut self, is_review: bool) {
+        self.is_review = is_review;
+    }
 }
 
 #[derive(Default)]
-pub struct ImageDiff {
+pub struct Diff {
     diffs: Vec<PairResult>,
 }
 
-impl ImageDiff {
-    pub fn compare_directories(
-        &mut self,
-        config: &CompareConfig,
-        left_path: &Path,
-        right_path: &Path,
-    ) -> Result<()> {
-        let pairs = pairs_from_paths(left_path, right_path, config.filter_name)?;
-        let mut diffs = compute_differences(pairs);
-
-        if config.ignore_match {
-            diffs.retain(|pair| !matches!(pair.difference, Difference::None));
-        }
-
-        if config.ignore_left_missing {
-            diffs.retain(|pair| !matches!(pair.left_info, ImageInfoResult::Missing));
-        }
-
-        if config.ignore_right_missing {
-            diffs.retain(|pair| !matches!(pair.right_info, ImageInfoResult::Missing));
-        }
-        self.diffs.append(&mut diffs);
-        Ok(())
+impl Diff {
+    pub fn render_report(&self, config: &ReportConfig) -> Result<String> {
+        render_html_report(config, &self.diffs)
     }
 
     pub fn create_report(&self, config: &ReportConfig, output: &Path, verbose: bool) -> Result<()> {
@@ -123,7 +162,9 @@ impl ImageDiff {
             return Ok(());
         }
         let count = self.diffs.len();
-        create_html_report(config, &self.diffs, output)?;
+        let report = self.render_report(config)?;
+        let mut file = File::create(output)?;
+        file.write_all(report.as_bytes())?;
         if verbose {
             println!(
                 "Report written into '{}'; found {} images",
