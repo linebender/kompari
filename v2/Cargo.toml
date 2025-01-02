@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+members = ["kompari", "kompari-app", "kompari-html", "kompari-tasks"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+# Keep in sync with RUST_MIN_VER in .github/workflows/ci.yml, with the relevant README.md files,
+# and with the MSRV in the Unreleased section of CHANGELOG.md.
+rust-version = "1.74"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/linebender/kompari"
+
+[workspace.dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[profile.ci]
+inherits = "dev"
+[profile.ci.package."*"]
+debug-assertions = true # Keep always on for dependencies for cache reuse.
