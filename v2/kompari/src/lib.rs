@@ -1,14 +1,24 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! A shared image diffing implementation, to be used in testing and developer tools.
+//!
+//! This crate also includes utilities for creating image snapshot test suites.
+
+// LINEBENDER LINT SET - lib.rs - v3
+// See https://linebender.org/wiki/canonical-lints/
+// These lints shouldn't apply to examples or tests.
+#![cfg_attr(not(test), warn(unused_crate_dependencies))]
+// These lints shouldn't apply to examples.
+#![warn(clippy::print_stdout, clippy::print_stderr)]
+// Targeting e.g. 32-bit means structs containing usize can give false positives for 64-bit.
+#![cfg_attr(target_pointer_width = "64", warn(clippy::trivially_copy_pass_by_ref))]
+// END LINEBENDER LINT SET
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
+pub use image;
+
+mod difference;
+
+/// The image type used throughout Kompari.
+pub type Image = image::RgbaImage;
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+mod tests {}
