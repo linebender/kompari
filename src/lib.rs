@@ -26,7 +26,10 @@ pub mod xtask_cli;
 pub use review::start_review_server;
 
 #[cfg(not(feature = "review"))]
-pub fn start_review_server(_config: &ReportConfig, _port: u16) -> Result<()> {
+pub fn start_review_server(_diff_builder: DiffBuilder,
+                           _report_config: ReportConfig,
+                           _port: u16,
+) -> Result<()> {
     Err(crate::Error::GenericError(
         "Kompari is not compiled with review support, compile it with `--features=review`"
             .to_string(),
