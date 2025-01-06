@@ -6,8 +6,7 @@ use crate::ReportConfig;
 use base64::prelude::*;
 use chrono::SubsecRound;
 use maud::{html, Markup, PreEscaped, DOCTYPE};
-use std::fs::File;
-use std::io::{Cursor, Write};
+use std::io::Cursor;
 use std::path::Path;
 
 const ICON: &[u8] = include_bytes!("../docs/logo_small.png");
@@ -119,10 +118,24 @@ fn render_difference_info(config: &ReportConfig, pair_diff: &PairResult) -> Mark
     }
 }
 
-fn render_pair_diff(config: &ReportConfig, pair_diff: &PairResult) -> crate::Result<Markup> {
+fn render_pair_diff(
+    config: &ReportConfig,
+    id: usize,
+    pair_diff: &PairResult,
+) -> crate::Result<Markup> {
     Ok(html! {
         div class="diff-entry" {
-            h2 {(pair_diff.pair.title)};
+            h2 {
+                @if config.is_review {
+                    label class="toggle-switch" {
+                        input type="checkbox" id=(format!("t{id}"));
+                        span class="slider";
+                    }
+                    script {
+                        (format!("document.getElementById('t{id}').addEventListener('change', toggle)"))
+                    }
+                }
+                (pair_diff.pair.title)};
             div class="comparison-container" {
                 div class="image-container" {
                     div class="stats-container" {
@@ -311,6 +324,90 @@ dialog {
     -ms-interpolation-mode: nearest-neighbor;
     image-rendering: pixelated;
 }
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+  margin-right: 1em;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .1s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: \"\";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .1s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #3c3;
+}
+input:checked + .slider:before {
+  transform: translateX(30px);
+}
+
+.accept-button {
+  padding: 12px 24px;
+  margin-bottom: 1em;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.accept-button:hover {
+  background-color: #45A049;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.accept-button:active {
+  transform: translateY(0px);
+  box-shadow: none;
+}
+.accept-button:disabled {
+  background-color: #CCCCCC;
+  cursor: not-allowed;
+  transform: none;
+}
+#errorMsg {
+    background-color: #fef2f2;
+    border: 1px solid #f87171;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 12px 0;
+    display: none;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: 600px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 ";
 
 const JS_CODE: &str = "
@@ -336,14 +433,71 @@ function closeImageDialog() {
 document.getElementById('imageDialog').addEventListener('click', function(event) {
     closeImageDialog();
 });
+
+var selected = new Set();
+function toggle(event) {
+    let node = event.target.parentNode.parentNode;
+    let name = node.childNodes[2].textContent;
+    if (event.target.checked) {
+        selected.add(name);
+        node.style.color = \"#3a3\";
+    } else {
+        selected.delete(name);
+        node.style.color = \"#333\";
+    }
+    updateAcceptButton()
+}
+
+function updateAcceptButton() {
+    let text = document.getElementById('acceptText');
+    text.textContent = \"Accept selected cases (\" + selected.size + \" / \" + nTests + \")\";
+    let button = document.getElementById('acceptButton');
+    button.disabled = (selected.size === 0);
+}
+
+async function acceptTests() {
+    let text = document.getElementById('acceptText');
+    text.textContent = \"Updating \" + selected.size + \" cases ...\";
+    let button = document.getElementById('acceptButton');
+    button.disabled = true;
+
+    try {
+        const url = '/update';
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+               \"Content-Type\": \"application/json\",
+            },
+            body: JSON.stringify({ accepted_names: Array.from(selected) })
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        } else {
+          for (i = 0; i < nTests; i++) {
+                document.getElementById(\"t\" + i).checked = false;
+          }
+          location.reload();
+        }
+    } catch (e) {
+        let error = document.getElementById('errorMsg');
+        error.textContent = e.message;
+        error.style.display = \"flex\";
+        text.textContent = \"Try update again\";
+        button.disabled = false;
+    }
+}
 ";
 
-pub(crate) fn create_html_report(
+pub(crate) fn render_html_report(
     config: &ReportConfig,
     diffs: &[PairResult],
-    output: &Path,
-) -> crate::Result<()> {
+) -> crate::Result<String> {
     let now = chrono::Local::now().round_subsecs(0);
+    let title = PreEscaped(if config.is_review {
+        "Kompari review"
+    } else {
+        "Kompari report"
+    });
     let report = html! {
         (DOCTYPE)
         html {
@@ -351,26 +505,31 @@ pub(crate) fn create_html_report(
                 meta charset="utf-8";
                 meta name="viewport" content="width=device-width, initial-scale=1.0";
                 meta name="generator" content=(format!("Kompari {}", env!("CARGO_PKG_VERSION")));
-                title { "Image diff" }
+                title { (title) }
                 style { (PreEscaped(CSS_STYLE)) }
                 link rel="icon" type="image/png" href=(embed_png_url(&ICON));
             }
             body {
                  div class="header" {
-                    h1 { img class="logo" src=(embed_png_url(ICON)) width="32" height="32"; "Kompari Report" }
+                    h1 { img class="logo" src=(embed_png_url(ICON)) width="32" height="32"; (title) }
                     p { "Generated on " (now) }
                 }
                 dialog id="imageDialog" {
                     img id="zoomedImage" class="zoomed-image" src="" alt="Zoomed Image";
                 }
+                @if config.is_review {
+                    script { (format!("const nTests = {};", diffs.len())) }
+                    button class="accept-button" id="acceptButton" disabled onClick="acceptTests()" {
+                        span class="button-text" id="acceptText" { (format!("Accept selected cases (0 / {})", diffs.len())) }
+                    }
+                    span id="errorMsg" {};
+                }
                 script { (PreEscaped(JS_CODE)) }
-                @for pair_diff in diffs {
-                   (render_pair_diff(config, pair_diff)?)
+                @for (id, pair_diff) in diffs.iter().enumerate() {
+                   (render_pair_diff(config, id, pair_diff)?)
                 }
             }
         }
     };
-    let mut file = File::create(output)?;
-    file.write_all(report.into_string().as_bytes())?;
-    Ok(())
+    Ok(report.into_string())
 }

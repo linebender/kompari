@@ -7,6 +7,7 @@ use std::path::Path;
 use std::process::Command;
 
 struct XtaskActionsImpl();
+
 impl XtaskActions for XtaskActionsImpl {
     fn generate_all_tests(&self) -> kompari::Result<()> {
         let cargo = std::env::var("CARGO").unwrap();

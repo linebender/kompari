@@ -7,7 +7,7 @@ categories = ["graphics", "multimedia::images", "development-tools::testing"]
 edition = "2021"
 # Keep in sync with RUST_MIN_VER in .github/workflows/ci.yml, with the relevant README.md files,
 # and with the MSRV in the Unreleased section of CHANGELOG.md.
-rust-version = "1.74"
+rust-version = "1.75"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/linebender/kompari"
 
@@ -20,6 +20,7 @@ targets = []
 [features]
 cli = ["dep:clap"]
 xtask-cli = ["dep:clap"]
+review = ["dep:hyper", "dep:tokio", "dep:axum", "dep:serde"]
 
 [[bin]]
 name = "kompari"
@@ -32,6 +33,10 @@ image = { version = "0.25", default-features = false, features = ["png"] }
 maud = "0.26"
 thiserror = "2"
 clap = { version = "4.5", features = ["derive"], optional = true }
+hyper = { version = "1.5", optional = true, features = ["http1", "server"] }
+axum = { version = "0.8.0", optional = true, default-features = false, features = ["json", "http1", "tokio"] }
+tokio = { version = "1", optional = true, features = ["rt"] }
+serde = { version = "1.0.217", optional = true, features = ["derive"] }
 
 [profile.ci]
 inherits = "dev"

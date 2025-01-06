@@ -118,16 +118,15 @@ fn create_report(
     snapshot_path: &Path,
     report_args: &ReportArgs,
 ) -> Result<(), crate::Error> {
-    let mut config = crate::CompareConfig::default();
-    config.set_ignore_left_missing(true);
+    let mut builder =
+        crate::DiffBuilder::new(current_path.to_path_buf(), snapshot_path.to_path_buf());
+    builder.set_ignore_left_missing(true);
 
-    let mut image_diff = crate::ImageDiff::default();
-    image_diff.compare_directories(&config, current_path, snapshot_path)?;
-
+    let diff = builder.build()?;
     let mut report_config = crate::ReportConfig::default();
     report_config.set_left_title("Current test");
     report_config.set_right_title("Snapshot");
     report_config.set_embed_images(report_config.embed_images);
-    image_diff.create_report(&report_config, &report_args.output, true)?;
+    diff.create_report(&report_config, &report_args.output, true)?;
     Ok(())
 }

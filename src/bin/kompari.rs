@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use clap::Parser;
-use kompari::{CompareConfig, ImageDiff, ReportConfig};
+use kompari::{start_review_server, DiffBuilder, ReportConfig};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -54,27 +54,41 @@ struct ReportArgs {
 }
 
 #[derive(Parser, Debug)]
+struct ReviewArgs {
+    /// Embed images into the report
+    #[arg(long, default_value_t = 7200)]
+    port: u16,
+}
+
+#[derive(Parser, Debug)]
 enum Command {
     Report(ReportArgs),
+    Review(ReviewArgs),
 }
 
 fn process_command(args: Args) -> kompari::Result<()> {
-    let mut config = CompareConfig::default();
-    config.set_ignore_match(args.ignore_match);
-    config.set_ignore_left_missing(args.ignore_left_missing);
-    config.set_ignore_right_missing(args.ignore_right_missing);
-    config.set_filter_name(args.filter.as_deref());
-
-    let mut image_diff = ImageDiff::default();
-    image_diff.compare_directories(&config, &args.left_path, &args.right_path)?;
+    let mut builder = DiffBuilder::new(args.left_path, args.right_path);
+    builder.set_ignore_match(args.ignore_match);
+    builder.set_ignore_left_missing(args.ignore_left_missing);
+    builder.set_ignore_right_missing(args.ignore_right_missing);
+    builder.set_filter_name(args.filter);
 
     match args.command {
         Command::Report(opts) => {
+            let diff = builder.build()?;
             let mut config = ReportConfig::default();
             config.set_left_title(&args.left_title);
             config.set_right_title(&args.right_title);
             config.set_embed_images(opts.embed_images);
-            image_diff.create_report(&config, &opts.output, true)?;
+            diff.create_report(&config, &opts.output, true)?;
+        }
+        Command::Review(opts) => {
+            let mut config = ReportConfig::default();
+            config.set_left_title(&args.left_title);
+            config.set_right_title(&args.right_title);
+            config.set_review(true);
+            config.set_embed_images(true);
+            start_review_server(builder, config, opts.port)?;
         }
     }
     Ok(())

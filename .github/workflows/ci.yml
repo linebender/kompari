@@ -8,7 +8,7 @@ env:
   # If the compilation fails, then the version specified here needs to be bumped up to reality.
   # Be sure to also update the rust-version property in the workspace Cargo.toml file,
   # the Unreleased section of CHANGELOG.md, plus all the README.md files of the affected packages.
-  RUST_MIN_VER: "1.74"
+  RUST_MIN_VER: "1.75"
   # List of packages that can not target Wasm.
   NO_WASM_PKGS: ""
   # List of packages that will be checked with the minimum supported Rust version.
@@ -156,20 +156,20 @@ jobs:
           save-if: ${{ github.event_name != 'merge_group' }}
 
       - name: cargo clippy
-        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature -- -D warnings
+        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --skip review -- -D warnings
 
       - name: cargo clippy (auxiliary)
-        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --tests --benches --examples -- -D warnings
+        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --skip review --tests --benches --examples -- -D warnings
 
       - name: cargo clippy (no debug_assertions)
         if: env.USING_DEBUG_ASSERTIONS == 'true'
-        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature -- -D warnings
+        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --skip review -- -D warnings
         env:
           CARGO_PROFILE_CI_DEBUG_ASSERTIONS: "false"
 
       - name: cargo clippy (auxiliary) (no debug_assertions)
         if: env.USING_DEBUG_ASSERTIONS == 'true'
-        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --tests --benches --examples -- -D warnings
+        run: cargo hack clippy --workspace ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --skip review --tests --benches --examples -- -D warnings
         env:
           CARGO_PROFILE_CI_DEBUG_ASSERTIONS: "false"
 
@@ -222,7 +222,7 @@ jobs:
 
       # TODO: Find a way to make tests work. Until then the tests are merely compiled.
       - name: cargo test compile
-        run: cargo test --workspace ${{ env.NO_WASM_PKGS }} --locked --target wasm32-unknown-unknown --all-features --no-run
+        run: cargo test --workspace ${{ env.NO_WASM_PKGS }} --locked --target wasm32-unknown-unknown --features cli,xtask-cli --no-run
 
   check-msrv:
     name: cargo check (msrv)
@@ -280,11 +280,11 @@ jobs:
           save-if: ${{ github.event_name != 'merge_group' }}
 
       - name: cargo check
-        run: cargo hack check ${{ env.RUST_MIN_VER_PKGS }} ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature
+        run: cargo hack check ${{ env.RUST_MIN_VER_PKGS }} ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --skip review
 
       - name: cargo check (no debug_assertions)
         if: env.USING_DEBUG_ASSERTIONS == 'true'
-        run: cargo hack check ${{ env.RUST_MIN_VER_PKGS }} ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature
+        run: cargo hack check ${{ env.RUST_MIN_VER_PKGS }} ${{ env.NO_WASM_PKGS }} --locked --profile ci --target wasm32-unknown-unknown --optional-deps --each-feature --skip review
         env:
           CARGO_PROFILE_CI_DEBUG_ASSERTIONS: "false"
 
