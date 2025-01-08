@@ -1,3 +1,6 @@
+// Copyright 2024 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 //! A shared image diffing implementation, to be used in testing and developer tools.
 //!
 //! This crate also includes utilities for creating image snapshot test suites.
@@ -13,12 +16,32 @@
 // END LINEBENDER LINT SET
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
+use std::path::PathBuf;
 pub use image;
+use thiserror::Error;
 
 mod difference;
 
 /// The image type used throughout Kompari.
 pub type Image = image::RgbaImage;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("IO error")]
+    IoError(#[from] std::io::Error),
+
+    #[error("Path is a directory: `{0}`")]
+    NotDirectory(PathBuf),
+
+    #[error("Image error")]
+    ImageError(#[from] image::ImageError),
+
+    #[error("Error `{0}`")]
+    GenericError(String),
+}
+
+pub type Result<T> = std::result::Result<T, Error>;
+
 
 #[cfg(test)]
 mod tests {}

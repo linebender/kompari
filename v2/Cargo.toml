@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["kompari", "kompari-app", "kompari-html", "kompari-tasks"]
+members = ["kompari", "kompari-cli", "kompari-html", "kompari-tasks"]
 
 [workspace.package]
 version = "0.1.0"
@@ -13,6 +13,7 @@ repository = "https://github.com/linebender/kompari"
 
 [workspace.dependencies]
 image = { version = "0.25", default-features = false, features = ["png"] }
+thiserror = { version = "2" }
 
 [workspace.lints]
 # This one may vary depending on the project.

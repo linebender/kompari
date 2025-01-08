@@ -1,5 +1,5 @@
 [package]
-name = "kompari-app"
+name = "kompari-cli"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

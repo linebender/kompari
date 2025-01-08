@@ -1,12 +1,13 @@
+// Copyright 2024 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use image::{Pixel, Rgba};
 
 use crate::Image;
 
 #[derive(Debug)]
-pub enum Difference {
+pub enum ImageDifference {
     None,
-    MissingFile,
-    LoadError,
     SizeMismatch,
     Content {
         n_different_pixels: u64,
