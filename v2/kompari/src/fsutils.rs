@@ -3,7 +3,9 @@
 
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
-use image::RgbImage;
+
+// Copyright 2024 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 
 pub(crate) fn list_image_dir(
     dir_path: &Path,
@@ -37,5 +39,5 @@ pub(crate) fn load_image(path: &Path) -> crate::Result<crate::Image> {
     if !path.is_file() {
         return Err(crate::Error::FileNotFound(path.to_path_buf()))
     }
-    Ok(image::ImageReader::open(path)?.decode()?.into_rgb8())
+    Ok(image::ImageReader::open(path)?.decode()?.into_rgba8())
 }

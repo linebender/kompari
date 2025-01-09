@@ -24,6 +24,9 @@ mod imgdiff;
 mod dirdiff;
 mod fsutils;
 
+#[cfg(test)]
+mod tests;
+
 /// The image type used throughout Kompari.
 pub type Image = image::RgbaImage;
 
@@ -46,7 +49,3 @@ pub enum Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
-
-
-#[cfg(test)]
-mod tests {}

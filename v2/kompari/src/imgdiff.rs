@@ -16,26 +16,26 @@ pub enum ImageDifference {
     },
 }
 
-pub fn compare_images(old: &Image, new: &Image) -> Difference {
-    if old.width() != new.width() || old.height() != new.height() {
-        return Difference::SizeMismatch;
+pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
+    if left.width() != right.width() || left.height() != right.height() {
+        return ImageDifference::SizeMismatch;
     }
 
-    let n_different_pixels: u64 = old
+    let n_different_pixels: u64 = left
         .pixels()
-        .zip(new.pixels())
+        .zip(right.pixels())
         .map(|(pl, pr)| if pl == pr { 0 } else { 1 })
         .sum();
 
     if n_different_pixels == 0 {
-        return Difference::None;
+        return ImageDifference::None;
     }
 
     let mut distance_sum: u64 = 0;
 
-    let diff_image_data: Vec<u8> = old
+    let diff_image_data: Vec<u8> = left
         .pixels()
-        .zip(new.pixels())
+        .zip(right.pixels())
         .flat_map(|(&p1, &p2)| {
             let total_distance = pixel_distance(p1, p2);
             distance_sum += total_distance;
@@ -53,10 +53,10 @@ pub fn compare_images(old: &Image, new: &Image) -> Difference {
         })
         .collect();
 
-    let diff_image = Image::from_vec(old.width(), old.height(), diff_image_data)
+    let diff_image = Image::from_vec(left.width(), left.height(), diff_image_data)
         .expect("Same number of pixels as left and right, which have the same dimensions");
 
-    Difference::Content {
+    ImageDifference::Content {
         n_different_pixels,
         distance_sum,
         diff_image,
