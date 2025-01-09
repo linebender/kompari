@@ -1,5 +1,7 @@
 use std::fs::File;
 use std::path::{Path, PathBuf};
+use crate::fsutils::{list_image_dir_names, load_image};
+use crate::imgdiff::{compare_images, ImageDifference};
 
 pub struct DirDiffConfig {
     left_path: PathBuf,
@@ -20,13 +22,24 @@ impl DirDiffConfig {
         }
     }
 
-    pub fn create_diff(&self) -> Result<DirDiff> {
+    pub fn create_diff(&self) -> crate::Result<DirDiff> {
         let pairs = pairs_from_paths(
             &self.left_path,
             &self.right_path,
             self.filter_name.as_deref(),
         )?;
-        let mut diffs = compute_differences(pairs);
+        let mut diffs: Vec<_> = pairs
+            .into_iter()
+            .filter_map(|pair| {
+                let diff_result = compute_pair_diff(&pair);
+                Some(PairResult {
+                    title: pair.title,
+                    left: pair.left,
+                    right: pair.right,
+                    diff_result,
+                })
+            })
+            .collect();
 
         if self.ignore_left_missing {
             diffs.retain(|pair| !matches!(pair.left_info, ImageInfoResult::Missing));
@@ -51,21 +64,33 @@ impl DirDiffConfig {
     }
 }
 
-enum DiffResult {
-    LeftMissing,
-    RightMissing,
-    ImageDifference(ImageDifference)
+#[derive(Debug)]
+pub enum LeftRightError {
+    Left(crate::Error),
+    Right(crate::Error),
+    Both(crate::Error, crate::Error)
 }
 
-pub struct Pair {
-    pub title: String,
-    pub left: PathBuf,
-    pub right: PathBuf,
+impl LeftRightError {
+    pub fn left(&self) -> Option<&crate::Error> {
+        match self {
+            LeftRightError::Left(e) | LeftRightError::Both(e, _) => Some(e),
+            LeftRightError::Right(_) => None,
+        }
+    }
+    pub fn right(&self) -> Option<&crate::Error> {
+        match self {
+            LeftRightError::Right(e) | LeftRightError::Both(e, _) => Some(e),
+            LeftRightError::Left(_) => None,
+        }
+    }
 }
 
 pub struct PairResult {
-    pair: Pair,
-
+    pub title: String,
+    pub left: PathBuf,
+    pub right: PathBuf,
+    pub image_diff: Result<ImageDifference, LeftRightError>
 }
 
 #[derive(Default)]
@@ -75,4 +100,61 @@ pub struct DirDiff {
 
 impl DirDiff {
 
+}
+
+
+pub struct Pair {
+    pub title: String,
+    pub left: PathBuf,
+    pub right: PathBuf,
+}
+
+
+pub(crate) fn pairs_from_paths(
+    left_path: &Path,
+    right_path: &Path,
+    filter_name: Option<&str>,
+) -> crate::Result<Vec<Pair>> {
+    if !left_path.is_dir() {
+        return Err(crate::Error::NotDirectory(left_path.to_path_buf()));
+    }
+    if !right_path.is_dir() {
+        return Err(crate::Error::NotDirectory(right_path.to_path_buf()));
+    }
+    let mut names: Vec<_> = list_image_dir_names(left_path)?.collect();
+    names.extend(list_image_dir_names(right_path)?);
+    names.sort_unstable();
+    names.dedup();
+    names.retain(|filename| {
+        filter_name
+            .as_ref()
+            .map(|f| filename.to_string_lossy().contains(f))
+            .unwrap_or(true)
+    });
+    Ok(names
+        .into_iter()
+        .map(|name| {
+            let left = left_path.join(&name);
+            let right = right_path.join(&name);
+            Pair::new(
+                name.into_string()
+                    .unwrap_or_else(|name| name.to_string_lossy().into_owned()),
+                left,
+                right,
+            )
+        })
+        .collect())
+}
+
+
+fn compute_pair_diff(pair: &Pair) -> Result<ImageDifference, LeftRightError> {
+    let left = load_image(&pair.left);
+    let right = load_image(&pair.right);
+    let (left_image, right_image) = match (left, right) {
+        (Ok(left_image), Ok(right_image)) => (left_image, right_image),
+        (Err(e), Ok(_)) => return Err(LeftRightError::Left(e)),
+        (Ok(_), Err(e)) => return Err(LeftRightError::Right(e)),
+        (Err(e1), Err(e2)) => return Err(LeftRightError::Both(e1, e2)),
+    };
+    compare_images(&left_image, &right_image)
 }

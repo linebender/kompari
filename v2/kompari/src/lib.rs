@@ -20,7 +20,9 @@ use std::path::PathBuf;
 pub use image;
 use thiserror::Error;
 
-mod difference;
+mod imgdiff;
+mod dirdiff;
+mod fsutils;
 
 /// The image type used throughout Kompari.
 pub type Image = image::RgbaImage;
@@ -32,6 +34,9 @@ pub enum Error {
 
     #[error("Path is a directory: `{0}`")]
     NotDirectory(PathBuf),
+
+    #[error("File not found: `{0}`")]
+    FileNotFound(PathBuf),
 
     #[error("Image error")]
     ImageError(#[from] image::ImageError),
