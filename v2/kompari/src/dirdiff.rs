@@ -1,6 +1,6 @@
-use std::path::{Path, PathBuf};
 use crate::fsutils::{list_image_dir_names, load_image};
 use crate::imgdiff::{compare_images, ImageDifference};
+use std::path::{Path, PathBuf};
 
 pub struct DirDiffConfig {
     left_path: PathBuf,
@@ -11,7 +11,6 @@ pub struct DirDiffConfig {
 }
 
 impl DirDiffConfig {
-
     pub fn new(left_path: PathBuf, right_path: PathBuf) -> Self {
         DirDiffConfig {
             left_path,
@@ -32,11 +31,18 @@ impl DirDiffConfig {
             .into_iter()
             .filter_map(|pair| {
                 let image_diff = compute_pair_diff(&pair);
-                if self.ignore_left_missing && !matches!(image_diff, Err(ref e) if e.is_left_missing()) {
-                    return None
+                if matches!(image_diff, Ok(ImageDifference::None)) {
+                    return None;
                 }
-                if self.ignore_right_missing && !matches!(image_diff, Err(ref e) if e.is_right_missing()) {
-                    return None
+                if self.ignore_left_missing
+                    && !matches!(image_diff, Err(ref e) if e.is_left_missing())
+                {
+                    return None;
+                }
+                if self.ignore_right_missing
+                    && !matches!(image_diff, Err(ref e) if e.is_right_missing())
+                {
+                    return None;
                 }
                 Some(PairResult {
                     title: pair.title,
@@ -66,7 +72,7 @@ impl DirDiffConfig {
 pub enum LeftRightError {
     Left(crate::Error),
     Right(crate::Error),
-    Both(crate::Error, crate::Error)
+    Both(crate::Error, crate::Error),
 }
 
 impl LeftRightError {
@@ -84,19 +90,24 @@ impl LeftRightError {
     }
 
     pub fn is_left_missing(&self) -> bool {
-        self.left().map(|e| matches!(e, crate::Error::FileNotFound(_))).unwrap_or(false)
+        self.left()
+            .map(|e| matches!(e, crate::Error::FileNotFound(_)))
+            .unwrap_or(false)
     }
 
     pub fn is_right_missing(&self) -> bool {
-        self.right().map(|e| matches!(e, crate::Error::FileNotFound(_))).unwrap_or(false)
+        self.right()
+            .map(|e| matches!(e, crate::Error::FileNotFound(_)))
+            .unwrap_or(false)
     }
 }
 
+#[derive(Debug)]
 pub struct PairResult {
     pub title: String,
     pub left: PathBuf,
     pub right: PathBuf,
-    pub image_diff: Result<ImageDifference, LeftRightError>
+    pub image_diff: Result<ImageDifference, LeftRightError>,
 }
 
 #[derive(Default)]
@@ -110,13 +121,11 @@ impl DirDiff {
     }
 }
 
-
 struct Pair {
     pub title: String,
     pub left: PathBuf,
     pub right: PathBuf,
 }
-
 
 pub(crate) fn pairs_from_paths(
     left_path: &Path,
@@ -145,14 +154,15 @@ pub(crate) fn pairs_from_paths(
             let left = left_path.join(&name);
             let right = right_path.join(&name);
             Pair {
-                title: name.into_string().unwrap_or_else( | name| name.to_string_lossy().into_owned()),
+                title: name
+                    .into_string()
+                    .unwrap_or_else(|name| name.to_string_lossy().into_owned()),
                 left,
                 right,
             }
         })
         .collect())
 }
-
 
 fn compute_pair_diff(pair: &Pair) -> Result<ImageDifference, LeftRightError> {
     let left = load_image(&pair.left);

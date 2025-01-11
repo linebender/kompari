@@ -16,13 +16,13 @@
 // END LINEBENDER LINT SET
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-use std::path::PathBuf;
 pub use image;
+use std::path::PathBuf;
 use thiserror::Error;
 
-mod imgdiff;
 mod dirdiff;
 mod fsutils;
+mod imgdiff;
 
 #[cfg(test)]
 mod tests;
@@ -49,3 +49,5 @@ pub enum Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+pub use imgdiff::{compare_images, ImageDifference};

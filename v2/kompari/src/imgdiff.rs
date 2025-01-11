@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use image::{Pixel, Rgba};
+use std::fmt::{Debug, Formatter};
 
 use crate::Image;
 
-#[derive(Debug)]
 pub enum ImageDifference {
     None,
-    SizeMismatch,
+    SizeMismatch {
+        left_size: (u32, u32),
+        right_size: (u32, u32),
+    },
     Content {
         n_different_pixels: u64,
         distance_sum: u64,
@@ -16,9 +19,34 @@ pub enum ImageDifference {
     },
 }
 
+impl Debug for ImageDifference {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ImageDifference::None => write!(f, "Difference::None"),
+            ImageDifference::SizeMismatch {
+                left_size,
+                right_size,
+            } => write!(
+                f,
+                "Difference::SizeMismatch({:?}, {:?})",
+                left_size, right_size
+            ),
+            ImageDifference::Content {
+                n_different_pixels, ..
+            } => f
+                .debug_struct("Difference::Content")
+                .field("n_different_pixels", n_different_pixels)
+                .finish(),
+        }
+    }
+}
+
 pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
     if left.width() != right.width() || left.height() != right.height() {
-        return ImageDifference::SizeMismatch;
+        return ImageDifference::SizeMismatch {
+            left_size: (left.width(), left.height()),
+            right_size: (right.width(), right.height()),
+        };
     }
 
     let n_different_pixels: u64 = left
