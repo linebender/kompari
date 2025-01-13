@@ -5,7 +5,7 @@ use crate::pageconsts::{CSS_STYLE, ICON, JS_CODE};
 use crate::ReportConfig;
 use base64::prelude::*;
 use chrono::SubsecRound;
-use kompari::ImageDifference;
+use kompari::{ImageDifference, LeftRightError, PairResult};
 use maud::{html, Markup, PreEscaped, DOCTYPE};
 use std::io::Cursor;
 use std::path::Path;
@@ -29,10 +29,15 @@ fn render_image(
                 let image_data = std::fs::read(path)?;
                 (
                     embed_png_url(&image_data),
-                    imagesize::blob_size(&image_data)?,
+                    imagesize::blob_size(&image_data)
+                        .map_err(|e| kompari::Error::GenericError(e.to_string()))?,
                 )
             } else {
-                (path.display().to_string(), imagesize::size(path)?)
+                (
+                    path.display().to_string(),
+                    imagesize::size(path)
+                        .map_err(|e| kompari::Error::GenericError(e.to_string()))?,
+                )
             };
             let (w, h) = html_size(size.width as u32, size.height as u32, IMAGE_SIZE_LIMIT);
             html! {
@@ -88,9 +93,9 @@ fn render_stat_item(label: &str, value_type: &str, value: &str) -> Markup {
 
 fn render_difference_info(
     config: &ReportConfig,
-    difference: kompari::Result<ImageDifference>,
+    difference: &Result<ImageDifference, LeftRightError>,
 ) -> Markup {
-    match &difference {
+    match difference {
         Ok(ImageDifference::None) => render_stat_item("Status", "ok", "Match"),
         Ok(ImageDifference::SizeMismatch {
             left_size,
@@ -103,10 +108,9 @@ fn render_difference_info(
         Ok(ImageDifference::Content {
             n_different_pixels,
             distance_sum,
-            ..
+            diff_image,
         }) => {
-            let size = &pair_diff.left_info.info().unwrap().size;
-            let n_pixels = size.width as f32 * size.height as f32;
+            let n_pixels = diff_image.width() as f32 * diff_image.height() as f32;
             let pct = *n_different_pixels as f32 / n_pixels * 100.0;
             let distance_sum = *distance_sum as f32 / 255.0; // Normalize
             let avg_color_distance = distance_sum / n_pixels;
@@ -116,9 +120,8 @@ fn render_difference_info(
                 (render_stat_item("Avg. color distance", "", &format!("{avg_color_distance:.4}")))
             }
         }
-
-        Difference::LoadError => render_stat_item("Status", "error", "Loading error"),
-        Difference::MissingFile => render_stat_item("Status", "error", "Missing file"),
+        Err(e) if e.is_missing_file_error() => render_stat_item("Status", "error", "Missing file"),
+        Err(_) => render_stat_item("Status", "error", "Loading error"),
     }
 }
 
@@ -126,7 +129,7 @@ fn render_pair_diff(
     config: &ReportConfig,
     id: usize,
     pair_diff: &PairResult,
-) -> crate::Result<Markup> {
+) -> kompari::Result<Markup> {
     Ok(html! {
         div class="diff-entry" {
             h2 {
@@ -139,11 +142,11 @@ fn render_pair_diff(
                         (format!("document.getElementById('t{id}').addEventListener('change', toggle)"))
                     }
                 }
-                (pair_diff.pair.title)};
+                (pair_diff.title)};
             div class="comparison-container" {
                 div class="image-container" {
                     div class="stats-container" {
-                        (render_difference_info(config, &pair_diff))
+                        (render_difference_info(config, &pair_diff.image_diff))
                     }
                     div class="image-box" {
                         h3 { (config.left_title) }
@@ -166,7 +169,7 @@ fn render_pair_diff(
 pub(crate) fn render_html_report(
     config: &ReportConfig,
     diffs: &[PairResult],
-) -> crate::Result<String> {
+) -> kompari::Result<String> {
     let now = chrono::Local::now().round_subsecs(0);
     let title = PreEscaped(if config.is_review {
         "Kompari review"

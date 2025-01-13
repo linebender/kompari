@@ -100,6 +100,14 @@ impl LeftRightError {
             .map(|e| matches!(e, crate::Error::FileNotFound(_)))
             .unwrap_or(false)
     }
+
+    pub fn is_missing_file_error(&self) -> bool {
+        match self {
+            LeftRightError::Left(crate::Error::FileNotFound(_))
+            | LeftRightError::Right(crate::Error::FileNotFound(_)) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug)]

@@ -50,4 +50,5 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+pub use dirdiff::{DirDiff, DirDiffConfig, LeftRightError, PairResult};
 pub use imgdiff::{compare_images, ImageDifference};
