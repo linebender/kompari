@@ -14,6 +14,8 @@ repository = "https://github.com/linebender/kompari"
 [workspace.dependencies]
 image = { version = "0.25", default-features = false, features = ["png"] }
 thiserror = { version = "2" }
+clap = { version = "4.5", features = ["derive"] }
+
 
 [workspace.lints]
 # This one may vary depending on the project.

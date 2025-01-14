@@ -21,10 +21,10 @@ fn embed_png_url(data: &[u8]) -> String {
 fn render_image(
     config: &ReportConfig,
     path: &Path,
-    state: kompari::Result<()>,
+    error: Option<&kompari::Error>,
 ) -> kompari::Result<Markup> {
-    Ok(match state {
-        Ok(()) => {
+    Ok(match error {
+        None => {
             let (path, size) = if config.embed_images {
                 let image_data = std::fs::read(path)?;
                 (
@@ -44,10 +44,10 @@ fn render_image(
                 img class="zoom" src=(path) width=[w] height=[h] onclick="openImageDialog(this)";
             }
         }
-        Err(kompari::Error::FileNotFound(_)) => {
+        Some(kompari::Error::FileNotFound(_)) => {
             html! { "File is missing" }
         }
-        Err(err) => {
+        Some(err) => {
             html! { "Error: " (err) }
         }
     })
@@ -61,7 +61,7 @@ pub fn html_size(width: u32, height: u32, size_limit: u32) -> (Option<u32>, Opti
     }
 }
 
-fn render_difference_image(difference: &kompari::Result<ImageDifference>) -> Markup {
+fn render_difference_image(difference: &Result<ImageDifference, LeftRightError>) -> Markup {
     match difference {
         Ok(ImageDifference::Content { diff_image, .. }) => {
             let (w, h) = html_size(diff_image.width(), diff_image.height(), IMAGE_SIZE_LIMIT);
@@ -150,15 +150,15 @@ fn render_pair_diff(
                     }
                     div class="image-box" {
                         h3 { (config.left_title) }
-                        (render_image(config, &pair_diff.left_info, &pair_diff.pair.left)?)
+                        (render_image(config, &pair_diff.left, if let Err(e) = &pair_diff.image_diff { e.left() } else { None })?)
                     }
                     div class="image-box" {
                         h3 { (config.right_title) }
-                        (render_image(config, &pair_diff.right_info, &pair_diff.pair.right)?)
+                        (render_image(config, &pair_diff.right, if let Err(e) = &pair_diff.image_diff { e.right() } else { None })?)
                     }
                     div class="image-box" {
                         h3 { "Difference"}
-                        (render_difference_image(&pair_diff.difference))
+                        (render_difference_image(&pair_diff.image_diff))
                     }
                 }
             }

@@ -4,9 +4,7 @@
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 
-pub(crate) fn list_image_dir(
-    dir_path: &Path,
-) -> Result<impl Iterator<Item = PathBuf>, std::io::Error> {
+pub fn list_image_dir(dir_path: &Path) -> Result<impl Iterator<Item = PathBuf>, std::io::Error> {
     Ok(std::fs::read_dir(dir_path)?.filter_map(|entry| {
         if let Ok(entry) = entry {
             let path = entry.path();

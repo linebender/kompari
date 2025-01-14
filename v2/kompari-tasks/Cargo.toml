@@ -7,3 +7,5 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+kompari = { path = "../kompari" }
+clap = { workspace = true }
