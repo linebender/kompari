@@ -1,0 +1,15 @@
+[package]
+name = "kompari-html"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+kompari = { path = "../kompari" }
+image = { workspace = true }
+base64 = "0.22"
+chrono = "0.4"
+maud = "0.26"
+imagesize = "0.13"
