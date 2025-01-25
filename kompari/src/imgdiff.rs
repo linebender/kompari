@@ -66,18 +66,12 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
         .pixels()
         .zip(right.pixels())
         .flat_map(|(&p1, &p2)| {
-            let total_distance = pixel_distance(p1, p2);
-            distance_sum += total_distance;
-            if total_distance > 0 {
-                // Highlight the differences atop a semi-transparent view of the shared parts.
-                p2.0
+            let (diff_min, diff_max) = pixel_distance(p1, p2);
+            distance_sum += diff_max.max(diff_min) as u64;
+            if diff_min > diff_max {
+                [diff_min, 0, 0, u8::MAX]
             } else {
-                let [r, g, b, a] = p1.0;
-                if a > 128 {
-                    [r, g, b, a / 3]
-                } else {
-                    [r, g, b, 0]
-                }
+                [0, diff_max, 0, u8::MAX]
             }
         })
         .collect();
@@ -92,11 +86,25 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
     }
 }
 
-fn pixel_distance(old: Rgba<u8>, new: Rgba<u8>) -> u64 {
-    old.channels()
+// fn pixel_distance(left: Rgba<u8>, right: Rgba<u8>) -> u64 {
+//     left.channels()
+//         .iter()
+//         .zip(right.channels())
+//         .map(|(left, right)| left.abs_diff(*right).into())
+//         .max()
+//         .unwrap_or_default()
+// }
+//
+
+fn pixel_distance(left: Rgba<u8>, right: Rgba<u8>) -> (u8, u8) {
+    left.channels()
         .iter()
-        .zip(new.channels())
-        .map(|(left, right)| left.abs_diff(*right).into())
-        .max()
-        .unwrap_or_default()
+        .zip(right.channels())
+        .fold((0, 0), |(min, max), (c1, c2)| {
+            if c2 > c1 {
+                (min, max.max(c2 - c1))
+            } else {
+                (min.max(c1 - c2), max)
+            }
+        })
 }
