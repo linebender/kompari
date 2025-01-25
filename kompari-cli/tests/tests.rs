@@ -1,3 +1,6 @@
+// Copyright 2025 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use assert_cmd::Command;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;

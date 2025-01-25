@@ -1,3 +1,6 @@
+// Copyright 2025 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 // LINEBENDER LINT SET - lib.rs - v3
 // See https://linebender.org/wiki/canonical-lints/
 // These lints shouldn't apply to examples or tests.
