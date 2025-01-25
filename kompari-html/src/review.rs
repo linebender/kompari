@@ -22,8 +22,11 @@ pub fn start_review_server(
     report_config: &ReportConfig,
     port: u16,
 ) -> kompari::Result<()> {
+    let mut report_config = report_config.clone();
+    report_config.set_review(true);
+    report_config.set_embed_images(true);
     let shared_state = Arc::new(AppState {
-        report_config: report_config.clone(),
+        report_config,
         diff_builder: diff_builder.clone(),
     });
     println!("Running at http://localhost:{port}");

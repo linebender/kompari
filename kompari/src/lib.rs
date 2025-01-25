@@ -23,7 +23,6 @@ use thiserror::Error;
 mod dirdiff;
 mod fsutils;
 mod imgdiff;
-mod testutils;
 
 /// The image type used throughout Kompari.
 pub type Image = image::RgbaImage;
