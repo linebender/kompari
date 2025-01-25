@@ -1,3 +1,6 @@
+// Copyright 2024 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 pub(crate) const ICON: &[u8] = include_bytes!("../../docs/logo_small.png");
 
 pub(crate) const CSS_STYLE: &str = "

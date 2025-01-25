@@ -1,9 +1,9 @@
 [package]
 name = "kompari-cli"
-description = "CLI for reporting tool of image differences for snaphost testing."
+description = "CLI for reporting tool of image differences for snapshot testing."
 keywords = ["image", "report", "diff", "tests"]
 categories = ["graphics", "multimedia::images", "development-tools::testing"]
-readme = "README.md"
+
 
 version.workspace = true
 edition.workspace = true

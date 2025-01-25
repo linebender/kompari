@@ -1,6 +1,6 @@
 [package]
 name = "kompari"
-description = "Reporting tool of image differences for snaphost testing."
+description = "Snapshot test reporting CLI.."
 keywords = ["image", "report", "diff", "tests"]
 categories = ["graphics", "multimedia::images", "development-tools::testing"]
 

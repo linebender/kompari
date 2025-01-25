@@ -1,10 +1,9 @@
 [package]
 name = "kompari-html"
 
-description = "HTML reports for image differences for snaphost testing."
+description = "HTML reports for image differences for snapshot testing."
 keywords = ["image", "report", "diff", "tests"]
 categories = ["graphics", "multimedia::images", "development-tools::testing"]
-readme = "README.md"
 
 
 version.workspace = true

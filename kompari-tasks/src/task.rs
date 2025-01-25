@@ -1,3 +1,6 @@
+// Copyright 2024 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use crate::args::{Args, Command, DeadSnapshotArgs};
 use kompari::{list_image_dir, list_image_dir_names, DirDiffConfig};
 use kompari_html::{render_html_report, start_review_server, ReportConfig};

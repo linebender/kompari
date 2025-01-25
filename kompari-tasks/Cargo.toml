@@ -4,7 +4,6 @@ name = "kompari-tasks"
 description = "Supportive code for Xtasks based on Kompari"
 keywords = ["image", "report", "diff", "tests"]
 categories = ["graphics", "multimedia::images", "development-tools::testing"]
-readme = "README.md"
 
 
 version.workspace = true

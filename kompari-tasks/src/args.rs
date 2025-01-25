@@ -1,3 +1,6 @@
+// Copyright 2024 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -29,7 +32,7 @@ pub struct ReportArgs {
 
 #[derive(Parser, Debug)]
 pub struct ReviewArgs {
-    /// Embed images into the report
+    /// Port for web server
     #[arg(long, default_value_t = 7200)]
     pub port: u16,
 }
