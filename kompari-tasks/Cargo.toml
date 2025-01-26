@@ -1,0 +1,18 @@
+[package]
+name = "kompari-tasks"
+
+description = "Supportive code for Xtasks based on Kompari"
+keywords = ["image", "report", "diff", "tests"]
+categories = ["graphics", "multimedia::images", "development-tools::testing"]
+
+
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+kompari = { path = "../kompari" }
+kompari-html = { path = "../kompari-html" }
+clap = { workspace = true }

@@ -1,42 +1,85 @@
-[package]
-name = "kompari"
+[workspace]
+resolver = "2"
+members = ["kompari", "kompari-cli", "kompari-html", "kompari-tasks"]
+
+[workspace.package]
 version = "0.1.0"
-description = "Reporting tool of image differences for snaphost testing."
-keywords = ["image", "report", "diff", "tests"]
-categories = ["graphics", "multimedia::images", "development-tools::testing"]
 edition = "2021"
 # Keep in sync with RUST_MIN_VER in .github/workflows/ci.yml, with the relevant README.md files,
 # and with the MSRV in the Unreleased section of CHANGELOG.md.
-rust-version = "1.75"
+rust-version = "1.78"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/linebender/kompari"
 
-[package.metadata.docs.rs]
-all-features = true
-# There are no platform specific docs.
-default-target = "x86_64-unknown-linux-gnu"
-targets = []
-
-[features]
-cli = ["dep:clap"]
-xtask-cli = ["dep:clap"]
-review = ["dep:hyper", "dep:tokio", "dep:axum", "dep:serde"]
-
-[[bin]]
-name = "kompari"
-required-features = ["cli"]
-
-[dependencies]
-base64 = "0.22"
-chrono = "0.4"
+[workspace.dependencies]
 image = { version = "0.25", default-features = false, features = ["png"] }
-maud = "0.26"
-thiserror = "2"
-clap = { version = "4.5", features = ["derive"], optional = true }
-hyper = { version = "1.5", optional = true, features = ["http1", "server"] }
-axum = { version = "0.8.0", optional = true, default-features = false, features = ["json", "http1", "tokio"] }
-tokio = { version = "1", optional = true, features = ["rt"] }
-serde = { version = "1.0.217", optional = true, features = ["derive"] }
+thiserror = { version = "2" }
+clap = { version = "4.5", features = ["derive"] }
+
+
+[workspace.lints]
+# This one may vary depending on the project.
+rust.unsafe_code = "forbid"
+
+# LINEBENDER LINT SET - Cargo.toml - v4
+# See https://linebender.org/wiki/canonical-lints/
+rust.keyword_idents_2024 = "forbid"
+rust.non_ascii_idents = "forbid"
+rust.non_local_definitions = "forbid"
+rust.unsafe_op_in_unsafe_fn = "forbid"
+
+rust.elided_lifetimes_in_paths = "warn"
+rust.let_underscore_drop = "warn"
+rust.missing_debug_implementations = "warn"
+#rust.missing_docs = "warn"
+rust.single_use_lifetimes = "warn"
+rust.trivial_numeric_casts = "warn"
+rust.unexpected_cfgs = "warn"
+rust.unit_bindings = "warn"
+rust.unnameable_types = "warn"
+rust.unreachable_pub = "warn"
+rust.unused_import_braces = "warn"
+rust.unused_lifetimes = "warn"
+rust.unused_macro_rules = "warn"
+rust.unused_qualifications = "warn"
+rust.variant_size_differences = "warn"
+
+clippy.too_many_arguments = "allow"
+
+clippy.allow_attributes = "warn"
+clippy.allow_attributes_without_reason = "warn"
+clippy.cast_possible_truncation = "warn"
+clippy.collection_is_never_read = "warn"
+clippy.dbg_macro = "warn"
+clippy.debug_assert_with_mut_call = "warn"
+clippy.doc_markdown = "warn"
+clippy.fn_to_numeric_cast_any = "warn"
+clippy.infinite_loop = "warn"
+clippy.large_include_file = "warn"
+clippy.large_stack_arrays = "warn"
+clippy.match_same_arms = "warn"
+clippy.mismatching_type_param_order = "warn"
+clippy.missing_assert_message = "warn"
+#clippy.missing_errors_doc = "warn"
+clippy.missing_fields_in_debug = "warn"
+#clippy.missing_panics_doc = "warn"
+clippy.partial_pub_fields = "warn"
+clippy.return_self_not_must_use = "warn"
+clippy.same_functions_in_if_condition = "warn"
+clippy.semicolon_if_nothing_returned = "warn"
+clippy.shadow_unrelated = "warn"
+clippy.should_panic_without_expect = "warn"
+clippy.todo = "warn"
+clippy.unseparated_literal_suffix = "warn"
+clippy.use_self = "warn"
+clippy.wildcard_imports = "warn"
+
+#clippy.cargo_common_metadata = "warn"
+clippy.negative_feature_names = "warn"
+clippy.redundant_feature_names = "warn"
+clippy.wildcard_dependencies = "warn"
+# END LINEBENDER LINT SET
+
 
 [profile.ci]
 inherits = "dev"

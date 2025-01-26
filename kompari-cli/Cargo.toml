@@ -1,0 +1,21 @@
+[package]
+name = "kompari-cli"
+description = "CLI for reporting tool of image differences for snapshot testing."
+keywords = ["image", "report", "diff", "tests"]
+categories = ["graphics", "multimedia::images", "development-tools::testing"]
+
+
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+kompari = { path = "../kompari" }
+kompari-html = { path = "../kompari-html" }
+clap = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = "2.0"
+tempfile = "3.15"

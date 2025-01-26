@@ -1,0 +1,24 @@
+[package]
+name = "kompari-html"
+
+description = "HTML reports for image differences for snapshot testing."
+keywords = ["image", "report", "diff", "tests"]
+categories = ["graphics", "multimedia::images", "development-tools::testing"]
+
+
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+kompari = { path = "../kompari" }
+image = { workspace = true }
+base64 = "0.22"
+chrono = "0.4"
+maud = "0.26"
+imagesize = "0.13"
+serde = { version = "1.0.217", features = ["derive"] }
+tokio = "1.43"
+axum = "0.8"

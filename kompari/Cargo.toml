@@ -1,0 +1,25 @@
+[package]
+name = "kompari"
+description = "Snapshot test reporting CLI.."
+keywords = ["image", "report", "diff", "tests"]
+categories = ["graphics", "multimedia::images", "development-tools::testing"]
+
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+# There are no platform specific docs.
+default-target = "x86_64-unknown-linux-gnu"
+targets = []
+
+[dependencies]
+# For the bulk of Kompari's functionality
+image = { workspace = true }
+thiserror = { workspace = true }

@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 demolib = { path = "../demolib" }
 clap = { version = "4.5", features = ["derive"] }
-kompari = { path = "../..", features = ["xtask-cli"] }
+kompari = { path = "../../kompari" }
+kompari-tasks = { path = "../../kompari-tasks" }
