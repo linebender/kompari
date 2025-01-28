@@ -146,6 +146,7 @@ body {
 }
 
 img.zoom:hover {
+    cursor: pointer;
     transform: scale(1.05);
 }
 
@@ -251,7 +252,22 @@ input:checked + .slider:before {
     max-width: 600px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-
+.tabs {
+  margin-top: 8px;
+  display: flex;
+}
+.tab {
+  margin-left: 10px;
+  margin-right: 10px;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+}
+.tab.active {
+  color: #444;
+  border-bottom: 2px solid #444;
+}
 ";
 
 pub(crate) const JS_CODE: &str = "
@@ -297,6 +313,13 @@ function updateAcceptButton() {
     text.textContent = \"Accept selected cases (\" + selected.size + \" / \" + nTests + \")\";
     let button = document.getElementById('acceptButton');
     button.disabled = (selected.size === 0);
+}
+
+function switchDiffTab(id, selected) {
+    [1, 2].forEach(t => document.getElementById(`tab-diff${t}-${id}`).classList.remove('active'));
+    document.getElementById(`tab-diff${selected}-${id}`).classList.add('active');
+    [1, 2].forEach(t => document.getElementById(`img-diff${t}-${id}`).style.display = 'none');
+    document.getElementById(`img-diff${selected}-${id}`).style.display = 'inline';
 }
 
 async function acceptTests() {
