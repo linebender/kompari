@@ -15,7 +15,8 @@ pub enum ImageDifference {
     Content {
         n_different_pixels: u64,
         distance_sum: u64,
-        diff_image: Image,
+        rg_diff_image: Image,
+        overlay_diff_image: Image,
     },
 }
 
@@ -41,6 +42,48 @@ impl Debug for ImageDifference {
     }
 }
 
+fn compute_rg_diff_image(left: &Image, right: &Image) -> (Image, u64) {
+    let mut distance_sum = 0;
+    let diff_image_data: Vec<u8> = left
+        .pixels()
+        .zip(right.pixels())
+        .flat_map(|(&p1, &p2)| {
+            let (diff_min, diff_max) = pixel_min_max_distance(p1, p2);
+            distance_sum += diff_max.max(diff_min) as u64;
+            if diff_min > diff_max {
+                [diff_min, 0, 0, u8::MAX]
+            } else {
+                [0, diff_max, 0, u8::MAX]
+            }
+        })
+        .collect();
+    let image = Image::from_vec(left.width(), left.height(), diff_image_data)
+        .expect("Same number of pixels as left and right, which have the same dimensions");
+    (image, distance_sum)
+}
+
+fn compute_overlay_diff_image(left: &Image, right: &Image) -> Image {
+    let diff_image_data: Vec<u8> = left
+        .pixels()
+        .zip(right.pixels())
+        .flat_map(|(&p1, &p2)| {
+            let distance = pixel_distance(p1, p2);
+            if distance > 0 {
+                p2.0
+            } else {
+                let [r, g, b, a] = p1.0;
+                if a > 128 {
+                    [r, g, b, a / 3]
+                } else {
+                    [r, g, b, 0]
+                }
+            }
+        })
+        .collect();
+    Image::from_vec(left.width(), left.height(), diff_image_data)
+        .expect("Same number of pixels as left and right, which have the same dimensions")
+}
+
 /// Find differences between two images
 pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
     if left.width() != right.width() || left.height() != right.height() {
@@ -60,43 +103,26 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
         return ImageDifference::None;
     }
 
-    let mut distance_sum: u64 = 0;
-
-    let diff_image_data: Vec<u8> = left
-        .pixels()
-        .zip(right.pixels())
-        .flat_map(|(&p1, &p2)| {
-            let (diff_min, diff_max) = pixel_distance(p1, p2);
-            distance_sum += diff_max.max(diff_min) as u64;
-            if diff_min > diff_max {
-                [diff_min, 0, 0, u8::MAX]
-            } else {
-                [0, diff_max, 0, u8::MAX]
-            }
-        })
-        .collect();
-
-    let diff_image = Image::from_vec(left.width(), left.height(), diff_image_data)
-        .expect("Same number of pixels as left and right, which have the same dimensions");
-
+    let (rg_diff_image, distance_sum) = compute_rg_diff_image(left, right);
+    let overlay_diff_image = compute_overlay_diff_image(left, right);
     ImageDifference::Content {
         n_different_pixels,
         distance_sum,
-        diff_image,
+        rg_diff_image,
+        overlay_diff_image,
     }
 }
 
-// fn pixel_distance(left: Rgba<u8>, right: Rgba<u8>) -> u64 {
-//     left.channels()
-//         .iter()
-//         .zip(right.channels())
-//         .map(|(left, right)| left.abs_diff(*right).into())
-//         .max()
-//         .unwrap_or_default()
-// }
-//
+fn pixel_distance(left: Rgba<u8>, right: Rgba<u8>) -> u64 {
+    left.channels()
+        .iter()
+        .zip(right.channels())
+        .map(|(c_left, c_right)| c_left.abs_diff(*c_right).into())
+        .max()
+        .unwrap_or_default()
+}
 
-fn pixel_distance(left: Rgba<u8>, right: Rgba<u8>) -> (u8, u8) {
+fn pixel_min_max_distance(left: Rgba<u8>, right: Rgba<u8>) -> (u8, u8) {
     left.channels()
         .iter()
         .zip(right.channels())
