@@ -47,12 +47,12 @@ impl DirDiffConfig {
                     return None;
                 }
                 if self.ignore_left_missing
-                    && !matches!(image_diff, Err(ref e) if e.is_left_missing())
+                    && matches!(image_diff, Err(ref e) if e.is_left_missing())
                 {
                     return None;
                 }
                 if self.ignore_right_missing
-                    && !matches!(image_diff, Err(ref e) if e.is_right_missing())
+                    && matches!(image_diff, Err(ref e) if e.is_right_missing())
                 {
                     return None;
                 }

@@ -80,7 +80,9 @@ pub enum Command {
 
 fn main() -> kompari::Result<()> {
     let args = Args::parse();
-    let diff_config = DirDiffConfig::new(args.left_path, args.right_path);
+    let mut diff_config = DirDiffConfig::new(args.left_path, args.right_path);
+    diff_config.set_ignore_left_missing(args.ignore_left_missing);
+    diff_config.set_ignore_right_missing(args.ignore_right_missing);
     let mut report_config = kompari_html::ReportConfig::default();
     report_config.set_left_title(args.left_title);
     report_config.set_right_title(args.right_title);
