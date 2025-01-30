@@ -1,8 +1,9 @@
 // Copyright 2025 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use crate::fsutils::{list_image_dir_names, load_image};
+use crate::fsutils::load_image;
 use crate::imgdiff::{compare_images, ImageDifference};
+use crate::list_image_dir_names;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -178,9 +179,7 @@ pub(crate) fn pairs_from_paths(
             let left = left_path.join(&name);
             let right = right_path.join(&name);
             Pair {
-                title: name
-                    .into_string()
-                    .unwrap_or_else(|n| n.to_string_lossy().into_owned()),
+                title: name.to_string_lossy().to_string(),
                 left,
                 right,
             }
