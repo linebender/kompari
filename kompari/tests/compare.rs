@@ -4,16 +4,19 @@
 use kompari::{DirDiffConfig, ImageDifference, LeftRightError};
 use std::path::Path;
 
-#[test]
-pub(crate) fn test_compare_dir() {
+fn create_test_diff_config() -> DirDiffConfig {
     let test_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
         .join("tests");
     let left = test_dir.join("left");
     let right = test_dir.join("right");
+    DirDiffConfig::new(left, right)
+}
 
-    let diff = DirDiffConfig::new(left, right).create_diff().unwrap();
+#[test]
+pub(crate) fn test_compare_dir() {
+    let diff = create_test_diff_config().create_diff().unwrap();
     let res = diff.results();
     let titles: Vec<_> = res.iter().map(|r| r.title.as_str()).collect();
     assert_eq!(
@@ -63,4 +66,42 @@ pub(crate) fn test_compare_dir() {
             right_size: (147, 881)
         })
     ));
+}
+
+#[test]
+pub(crate) fn test_ignore_left_missing() {
+    let mut config = create_test_diff_config();
+    config.set_ignore_left_missing(true);
+    let diff = config.create_diff().unwrap();
+    let res = diff.results();
+    let titles: Vec<_> = res.iter().map(|r| r.title.as_str()).collect();
+    assert_eq!(
+        titles,
+        [
+            "bright.png",
+            "changetext.png",
+            "right_missing.png",
+            "shift.png",
+            "size_error.png"
+        ]
+    );
+}
+
+#[test]
+pub(crate) fn test_ignore_right_missing() {
+    let mut config = create_test_diff_config();
+    config.set_ignore_right_missing(true);
+    let diff = config.create_diff().unwrap();
+    let res = diff.results();
+    let titles: Vec<_> = res.iter().map(|r| r.title.as_str()).collect();
+    assert_eq!(
+        titles,
+        [
+            "bright.png",
+            "changetext.png",
+            "left_missing.png",
+            "shift.png",
+            "size_error.png"
+        ]
+    );
 }
