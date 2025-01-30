@@ -19,29 +19,45 @@ pub(crate) fn test_compare_dir() {
     assert_eq!(
         titles,
         [
-            "example1.png",
+            "bright.png",
+            "changetext.png",
             "left_missing.png",
             "right_missing.png",
-            "size_error.png",
+            "shift.png",
+            "size_error.png"
         ]
     );
     assert!(matches!(
         res[0].image_diff,
+        Ok(ImageDifference::Content {
+            n_different_pixels: 18623,
+            ..
+        })
+    ));
+    assert!(matches!(
+        res[1].image_diff,
         Ok(ImageDifference::Content {
             n_different_pixels: 275,
             ..
         })
     ));
     assert!(matches!(
-        res[1].image_diff,
+        res[2].image_diff,
         Err(LeftRightError::Left(kompari::Error::FileNotFound(_)))
     ));
     assert!(matches!(
-        res[2].image_diff,
+        res[3].image_diff,
         Err(LeftRightError::Right(kompari::Error::FileNotFound(_)))
     ));
     assert!(matches!(
-        res[3].image_diff,
+        res[4].image_diff,
+        Ok(ImageDifference::Content {
+            n_different_pixels: 3858,
+            ..
+        })
+    ));
+    assert!(matches!(
+        res[5].image_diff,
         Ok(ImageDifference::SizeMismatch {
             left_size: (850, 88),
             right_size: (147, 881)
