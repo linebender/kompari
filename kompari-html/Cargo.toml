@@ -17,8 +17,8 @@ kompari = { path = "../kompari" }
 image = { workspace = true }
 base64 = "0.22"
 chrono = "0.4"
-maud = "0.26"
+maud = "0.27"
 imagesize = "0.13"
-serde = { version = "1.0.217", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 tokio = "1.43"
 axum = "0.8"
