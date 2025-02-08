@@ -29,4 +29,42 @@ fn test_create_report() {
         .map(|e| e.unwrap().file_name().to_str().unwrap().to_owned())
         .collect();
     assert_eq!(result, vec!["report.html"]);
+    let report = std::fs::read_to_string(workdir.path().join("report.html")).unwrap();
+    for name in [
+        "bright",
+        "changetext",
+        "right_missing",
+        "left_missing",
+        "shift",
+        "size_error",
+    ] {
+        assert!(report.contains(&format!("{}.png", name)));
+    }
+    assert!(!report.contains("same.png"));
+}
+
+#[test]
+fn test_filter_filenames() {
+    let workdir = TempDir::new().unwrap();
+    std::env::set_current_dir(workdir.path()).unwrap();
+
+    let test_dir = test_assets_dir();
+    let left = test_dir.join("left");
+    let right = test_dir.join("right");
+    let mut cmd = Command::cargo_bin("kompari-cli").unwrap();
+    cmd.arg("--filter").arg("change");
+    cmd.arg(&left).arg(&right).arg("report");
+    cmd.current_dir(&workdir);
+    cmd.assert().success();
+    let report = std::fs::read_to_string(workdir.path().join("report.html")).unwrap();
+    assert!(report.contains("changetext.png"));
+    for name in [
+        "bright",
+        "right_missing",
+        "left_missing",
+        "shift",
+        "size_error",
+    ] {
+        assert!(!report.contains(&format!("{}.png", name)));
+    }
 }

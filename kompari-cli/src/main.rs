@@ -83,6 +83,8 @@ fn main() -> kompari::Result<()> {
     let mut diff_config = DirDiffConfig::new(args.left_path, args.right_path);
     diff_config.set_ignore_left_missing(args.ignore_left_missing);
     diff_config.set_ignore_right_missing(args.ignore_right_missing);
+    diff_config.set_filter_name(args.filter);
+
     let mut report_config = kompari_html::ReportConfig::default();
     report_config.set_left_title(args.left_title);
     report_config.set_right_title(args.right_title);
@@ -90,8 +92,9 @@ fn main() -> kompari::Result<()> {
     match args.command {
         Command::Report(args) => {
             let diff = diff_config.create_diff()?;
-            let output = args.output;
+            report_config.set_embed_images(args.embed_images);
             let report = render_html_report(&report_config, diff.results())?;
+            let output = args.output;
             std::fs::write(&output, report)?;
             println!("Report written into '{}'", output.display());
         }
