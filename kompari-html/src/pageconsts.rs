@@ -268,6 +268,11 @@ input:checked + .slider:before {
   color: #444;
   border-bottom: 2px solid #444;
 }
+
+.hint {
+    color: #666;
+    font-size: 80%;
+}
 ";
 
 pub(crate) const JS_CODE: &str = "

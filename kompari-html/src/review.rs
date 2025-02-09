@@ -80,9 +80,9 @@ async fn update(
     for path in paths {
         let left = state.diff_builder.left_path().join(&path);
         let right = state.diff_builder.right_path().join(&path);
-        println!("Updating {} -> {}", left.display(), right.display());
-        if let Err(e) = std::fs::copy(&left, &right) {
-            eprintln!("Failed to rename {}: {}", left.display(), e);
+        println!("Updating {} -> {}", right.display(), left.display());
+        if let Err(e) = std::fs::copy(&right, &left) {
+            eprintln!("Failed to rename {}: {}", right.display(), e);
             return StatusCode::INTERNAL_SERVER_ERROR;
         }
     }

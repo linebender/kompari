@@ -223,6 +223,7 @@ pub fn render_html_report(config: &ReportConfig, diffs: &[PairResult]) -> kompar
                     button class="accept-button" id="acceptButton" disabled onClick="acceptTests()" {
                         span class="button-text" id="acceptText" { (format!("Accept selected cases (0 / {})", diffs.len())) }
                     }
+                    span class="hint" { "Accepting a case copies '" (config.right_title) "' to '" (config.left_title) "'" }
                     span id="errorMsg" {};
                 }
                 script { (PreEscaped(JS_CODE)) }
