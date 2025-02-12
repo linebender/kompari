@@ -16,7 +16,7 @@
 # Include .github, .cargo, etc.
 ignore-hidden = false
 extend-exclude = [
-    # /.git isn't in .gitignore, because git never tracks it.
-    # Typos doesn't know that, though.
-    "/.git",
+  # /.git isn't in .gitignore, because git never tracks it.
+  # Typos doesn't know that, though.
+  "/.git",
 ]
