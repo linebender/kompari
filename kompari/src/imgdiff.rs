@@ -2,9 +2,34 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use image::{Pixel, Rgba};
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 use crate::Image;
+
+#[derive(Debug)]
+pub enum DiffImageMethod {
+    RedGreen,
+    Overlay,
+}
+
+impl Display for DiffImageMethod {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::RedGreen => "RedGreen",
+                Self::Overlay => "Overlay",
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct DiffImage {
+    pub method: DiffImageMethod,
+    pub image: Image,
+}
 
 pub enum ImageDifference {
     None,
@@ -13,10 +38,10 @@ pub enum ImageDifference {
         right_size: (u32, u32),
     },
     Content {
+        n_pixels: u64,
         n_different_pixels: u64,
         distance_sum: u64,
-        rg_diff_image: Image,
-        overlay_diff_image: Image,
+        diff_images: Vec<DiffImage>,
     },
 }
 
@@ -106,10 +131,19 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
     let (rg_diff_image, distance_sum) = compute_rg_diff_image(left, right);
     let overlay_diff_image = compute_overlay_diff_image(left, right);
     ImageDifference::Content {
+        n_pixels: left.width() as u64 * right.height() as u64,
         n_different_pixels,
         distance_sum,
-        rg_diff_image,
-        overlay_diff_image,
+        diff_images: vec![
+            DiffImage {
+                method: DiffImageMethod::RedGreen,
+                image: rg_diff_image,
+            },
+            DiffImage {
+                method: DiffImageMethod::Overlay,
+                image: overlay_diff_image,
+            },
+        ],
     }
 }
 

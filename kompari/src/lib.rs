@@ -49,4 +49,4 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 pub use dirdiff::{DirDiff, DirDiffConfig, LeftRightError, PairResult};
 pub use fsutils::{list_image_dir, list_image_dir_names};
-pub use imgdiff::{compare_images, ImageDifference};
+pub use imgdiff::{compare_images, DiffImage, DiffImageMethod, ImageDifference};
