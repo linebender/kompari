@@ -24,3 +24,8 @@ targets = []
 image = { workspace = true }
 thiserror = { workspace = true }
 walkdir = "2.5"
+oxipng = { workspace = true, optional = true }
+
+[features]
+default = ["oxipng"]
+oxipng = ["dep:oxipng"]

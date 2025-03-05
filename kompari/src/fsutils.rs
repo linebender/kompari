@@ -30,10 +30,3 @@ pub fn list_image_dir_names(
 ) -> Result<impl Iterator<Item = PathBuf> + '_, std::io::Error> {
     Ok(list_image_dir(dir_path)?.map(move |p| p.strip_prefix(dir_path).unwrap().to_path_buf()))
 }
-
-pub(crate) fn load_image(path: &Path) -> crate::Result<crate::Image> {
-    if !path.is_file() {
-        return Err(crate::Error::FileNotFound(path.to_path_buf()));
-    }
-    Ok(image::ImageReader::open(path)?.decode()?.into_rgba8())
-}
