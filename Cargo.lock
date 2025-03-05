@@ -676,6 +676,7 @@ name = "kompari"
 version = "0.1.0"
 dependencies = [
  "image",
+ "log",
  "oxipng",
  "thiserror",
  "walkdir",
