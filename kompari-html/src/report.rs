@@ -66,35 +66,32 @@ fn render_difference_image(
     difference: &Result<ImageDifference, LeftRightError>,
 ) -> Markup {
     match difference {
-        Ok(ImageDifference::Content {
-            rg_diff_image,
-            overlay_diff_image,
-            ..
-        }) => {
-            let (w, h) = html_size(
-                rg_diff_image.width(),
-                rg_diff_image.height(),
-                IMAGE_SIZE_LIMIT,
-            );
-            let mut rg_data = Vec::new();
-            rg_diff_image
-                .write_to(&mut Cursor::new(&mut rg_data), image::ImageFormat::Png)
-                .unwrap();
-            let mut overlay_data = Vec::new();
-            overlay_diff_image
-                .write_to(&mut Cursor::new(&mut overlay_data), image::ImageFormat::Png)
-                .unwrap();
-
+        Ok(ImageDifference::Content { diff_images, .. }) => {
             html! {
-                img id=(format!("img-diff1-{}", id)) class="zoom" src=(embed_png_url(&rg_data)) width=[w] height=[h] onclick="openImageDialog(this)";
-                img id=(format!("img-diff2-{}", id)) style="display: none" class="zoom" src=(embed_png_url(&overlay_data)) width=[w] height=[h] onclick="openImageDialog(this)";
+                @for (idx, di) in diff_images.iter().enumerate() {
+                    @let (w, h, data) = {
+                        let (w, h) = html_size(
+                            di.image.width(),
+                            di.image.height(),
+                            IMAGE_SIZE_LIMIT,
+                        );
+                        let mut data = Vec::new();
+                        di.image.write_to(&mut Cursor::new(&mut data), image::ImageFormat::Png).unwrap();
+                        (w, h, data)
+                   };
+                   @let style = if idx == 0 { None } else { Some("display: none") };
+                   img id=(format!("img-diff-{id}-{idx}")) style=[style] class="zoom" src=(embed_png_url(&data)) width=[w] height=[h] onclick="openImageDialog(this)";
+                }
                 div class="tabs" {
-                    div id=(format!("tab-diff1-{}", id)) class="tab active" {"RedGreen"};
-                    div id=(format!("tab-diff2-{}", id)) class="tab" {"Overlay"};
+                    @for (idx, img) in diff_images.iter().enumerate() {
+                        @let class = if idx == 0 { "tab active" } else { "tab" };
+                        div id=(format!("tab-diff-{id}-{idx}")) class=(class) {(img.method.to_string())};
+                    }
                 }
                 script {
-                    (PreEscaped(format!("document.getElementById('tab-diff1-{id}').addEventListener('click', () => switchDiffTab({id}, 1));")))
-                    (PreEscaped(format!("document.getElementById('tab-diff2-{id}').addEventListener('click', () => switchDiffTab({id}, 2));")))
+                    @for idx in 0..diff_images.len() {
+                        (PreEscaped(format!("document.getElementById('tab-diff-{id}-{idx}').addEventListener('click', () => switchDiffTab({id}, {idx}, {}));", diff_images.len())))
+                    }
                 }
             }
         }
@@ -131,12 +128,12 @@ fn render_difference_info(
             (render_stat_item(&format!("{} size", config.right_title), "", &format!("{}x{}", right_size.0, right_size.1)))
         },
         Ok(ImageDifference::Content {
+            n_pixels,
             n_different_pixels,
             distance_sum,
-            rg_diff_image,
-            overlay_diff_image: _,
+            ..
         }) => {
-            let n_pixels = rg_diff_image.width() as f32 * rg_diff_image.height() as f32;
+            let n_pixels = (*n_pixels) as f32;
             let pct = *n_different_pixels as f32 / n_pixels * 100.0;
             let distance_sum = *distance_sum as f32 / 255.0; // Normalize
             let avg_color_distance = distance_sum / n_pixels;

@@ -320,11 +320,13 @@ function updateAcceptButton() {
     button.disabled = (selected.size === 0);
 }
 
-function switchDiffTab(id, selected) {
-    [1, 2].forEach(t => document.getElementById(`tab-diff${t}-${id}`).classList.remove('active'));
-    document.getElementById(`tab-diff${selected}-${id}`).classList.add('active');
-    [1, 2].forEach(t => document.getElementById(`img-diff${t}-${id}`).style.display = 'none');
-    document.getElementById(`img-diff${selected}-${id}`).style.display = 'inline';
+function switchDiffTab(id, selected, n) {
+    for (let idx = 0; idx < n; idx++) {
+        document.getElementById(`tab-diff-${id}-${idx}`).classList.remove('active');
+        document.getElementById(`img-diff-${id}-${idx}`).style.display = 'none';
+    }
+    document.getElementById(`tab-diff-${id}-${selected}`).classList.add('active');
+    document.getElementById(`img-diff-${id}-${selected}`).style.display = 'inline';
 }
 
 async function acceptTests() {
