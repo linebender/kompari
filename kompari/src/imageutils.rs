@@ -13,6 +13,7 @@ pub enum SizeOptimizationLevel {
 }
 
 pub fn load_image(path: &Path) -> crate::Result<Image> {
+    log::debug!("Loading image {}", path.display());
     if !path.is_file() {
         return Err(crate::Error::FileNotFound(path.to_path_buf()));
     }
