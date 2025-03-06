@@ -7,7 +7,7 @@ use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::post;
 use axum::{routing::get, Json, Router};
-use kompari::DirDiffConfig;
+use kompari::{bless_image, DirDiffConfig};
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -81,7 +81,7 @@ async fn update(
         let left = state.diff_builder.left_path().join(&path);
         let right = state.diff_builder.right_path().join(&path);
         println!("Updating {} -> {}", right.display(), left.display());
-        if let Err(e) = std::fs::copy(&right, &left) {
+        if let Err(e) = bless_image(&right, &left) {
             eprintln!("Failed to rename {}: {}", right.display(), e);
             return StatusCode::INTERNAL_SERVER_ERROR;
         }

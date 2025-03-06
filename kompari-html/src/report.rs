@@ -5,9 +5,8 @@ use crate::pageconsts::{CSS_STYLE, ICON, JS_CODE};
 use crate::ReportConfig;
 use base64::prelude::*;
 use chrono::SubsecRound;
-use kompari::{ImageDifference, LeftRightError, PairResult};
+use kompari::{ImageDifference, LeftRightError, PairResult, SizeOptimizationLevel};
 use maud::{html, Markup, PreEscaped, DOCTYPE};
-use std::io::Cursor;
 use std::path::Path;
 
 const IMAGE_SIZE_LIMIT: u32 = 400;
@@ -26,7 +25,8 @@ fn render_image(
     Ok(match error {
         None => {
             let (path, size) = if config.embed_images {
-                let image_data = std::fs::read(path)?;
+                let image_data =
+                    kompari::optimize_png(std::fs::read(path)?, SizeOptimizationLevel::Fast);
                 (
                     embed_png_url(&image_data),
                     imagesize::blob_size(&image_data)
@@ -75,8 +75,7 @@ fn render_difference_image(
                             di.image.height(),
                             IMAGE_SIZE_LIMIT,
                         );
-                        let mut data = Vec::new();
-                        di.image.write_to(&mut Cursor::new(&mut data), image::ImageFormat::Png).unwrap();
+                        let data = kompari::image_to_png(&di.image, SizeOptimizationLevel::Fast);
                         (w, h, data)
                    };
                    @let style = if idx == 0 { None } else { Some("display: none") };

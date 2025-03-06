@@ -22,6 +22,7 @@ use thiserror::Error;
 
 mod dirdiff;
 mod fsutils;
+mod imageutils;
 mod imgdiff;
 
 /// The image type used throughout Kompari.
@@ -49,4 +50,5 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 pub use dirdiff::{DirDiff, DirDiffConfig, LeftRightError, PairResult};
 pub use fsutils::{list_image_dir, list_image_dir_names};
+pub use imageutils::{bless_image, image_to_png, load_image, optimize_png, SizeOptimizationLevel};
 pub use imgdiff::{compare_images, DiffImage, DiffImageMethod, ImageDifference};

@@ -1,9 +1,8 @@
 // Copyright 2025 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use crate::fsutils::load_image;
 use crate::imgdiff::{compare_images, ImageDifference};
-use crate::list_image_dir_names;
+use crate::{list_image_dir_names, load_image};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
