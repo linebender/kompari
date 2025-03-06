@@ -23,14 +23,24 @@ $ cargo install kompari --features=cli
 OR with all supported formats
 
 ```commandline
-$ cargo install kompari --features=cli,all-formats
+$ cargo install kompari --features=cli
 ```
 
 ### Usage
 
+
+Create static HTML report:
+
 ```commandline
-$ kompari <left/image_dir> <right/image_dir> report
+$ kompari report <left/image_dir> <right/image_dir>
 ```
+
+Start HTTP server for interactive test blessing:
+
+```commandline
+$ kompari review <left/image_dir> <right/image_dir>
+```
+
 
 ## Minimum supported Rust Version (MSRV)
 

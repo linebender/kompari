@@ -21,7 +21,7 @@ fn test_create_report() {
     let left = test_dir.join("left");
     let right = test_dir.join("right");
     let mut cmd = Command::cargo_bin("kompari-cli").unwrap();
-    cmd.arg(&left).arg(&right).arg("report");
+    cmd.arg("report").arg(&left).arg(&right);
     cmd.current_dir(&workdir);
     cmd.assert().success();
     let result: Vec<_> = std::fs::read_dir(&workdir)
@@ -52,8 +52,8 @@ fn test_filter_filenames() {
     let left = test_dir.join("left");
     let right = test_dir.join("right");
     let mut cmd = Command::cargo_bin("kompari-cli").unwrap();
-    cmd.arg("--filter").arg("change");
-    cmd.arg(&left).arg(&right).arg("report");
+    cmd.arg("report").arg("--filter").arg("change");
+    cmd.arg(&left).arg(&right);
     cmd.current_dir(&workdir);
     cmd.assert().success();
     let report = std::fs::read_to_string(workdir.path().join("report.html")).unwrap();

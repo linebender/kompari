@@ -1,3 +1,6 @@
+// Copyright 2025 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use crate::{list_image_dir, optimize_png, SizeOptimizationLevel};
 use std::path::{Path, PathBuf};
 

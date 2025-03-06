@@ -15,6 +15,7 @@ repository.workspace = true
 kompari = { path = "../kompari" }
 kompari-html = { path = "../kompari-html" }
 clap = { workspace = true }
+kompari-tasks = { path = "../kompari-tasks" }
 
 [dev-dependencies]
 assert_cmd = "2.0"

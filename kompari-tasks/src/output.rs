@@ -1,3 +1,6 @@
+// Copyright 2025 the Kompari Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use humansize::{format_size, DECIMAL};
 use kompari::OptimizationResult;
 use std::io::Write;
