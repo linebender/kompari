@@ -16,3 +16,5 @@ repository.workspace = true
 kompari = { path = "../kompari" }
 kompari-html = { path = "../kompari-html" }
 clap = { workspace = true }
+termcolor = "1.4"
+humansize = "2.1"

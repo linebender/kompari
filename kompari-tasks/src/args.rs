@@ -17,6 +17,7 @@ pub enum Command {
     Review(ReviewArgs),
     Clean,
     DeadSnapshots(DeadSnapshotArgs),
+    SizeCheck(SizeCheckArgs),
 }
 
 #[derive(Parser, Debug)]
@@ -41,4 +42,11 @@ pub struct ReviewArgs {
 pub struct DeadSnapshotArgs {
     #[arg(long, default_value_t = false)]
     pub remove_files: bool,
+}
+
+#[derive(Parser, Debug)]
+pub struct SizeCheckArgs {
+    /// If enabled, images on file system are replaced with optimized version
+    #[arg(long, default_value_t = false)]
+    pub optimize: bool,
 }

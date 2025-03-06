@@ -13,6 +13,7 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 mod args;
+mod output;
 mod task;
 
 pub use args::Args;
