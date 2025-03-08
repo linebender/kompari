@@ -13,8 +13,9 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 pub mod args;
-pub mod output;
+mod optimizations;
 mod task;
 
 pub use args::Args;
+pub use optimizations::{check_size_optimizations, OptimizationResult};
 pub use task::{Actions, Task};

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use crate::args::{Args, Command, DeadSnapshotArgs};
-use crate::output::print_size_optimization_results;
-use kompari::{check_size_optimizations, list_image_dir, list_image_dir_names, DirDiffConfig};
+use crate::check_size_optimizations;
+use kompari::{list_image_dir, list_image_dir_names, DirDiffConfig};
 use kompari_html::{render_html_report, start_review_server, ReportConfig};
 use std::collections::BTreeSet;
 use std::ops::Deref;
@@ -71,9 +71,7 @@ impl Task {
                 )?;
             }
             Command::SizeCheck(sc_args) => {
-                let results =
-                    check_size_optimizations(self.diff_config.left_path(), sc_args.optimize)?;
-                print_size_optimization_results(&results)?;
+                check_size_optimizations(self.diff_config.left_path(), sc_args)?;
             }
         }
         Ok(())

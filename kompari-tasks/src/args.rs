@@ -49,4 +49,16 @@ pub struct SizeCheckArgs {
     /// If enabled, images on file system are replaced with optimized version
     #[arg(long, default_value_t = false)]
     pub optimize: bool,
+
+    /// Command will fail if at least one image can be optimized by more than given ratio.
+    /// E.g. --improvement-limit=0.8 means that error is signaled when an image can be optimized
+    /// more than 80% of its original size
+    #[arg(long)]
+    pub improvement_limit: Option<f32>,
+
+    /// Command will fail if at least one image has a size larger than the given limit (in KiB).
+    /// If --optimize is used then limit is computed from target size, otherwise the limit is applied
+    /// on the original size
+    #[arg(long)]
+    pub size_limit: Option<usize>,
 }

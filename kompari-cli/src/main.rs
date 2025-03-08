@@ -13,9 +13,9 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 use clap::Parser;
-use kompari::{check_size_optimizations, DirDiffConfig};
+use kompari::DirDiffConfig;
 use kompari_html::{render_html_report, start_review_server, ReportConfig};
-use kompari_tasks::output::print_size_optimization_results;
+use kompari_tasks::check_size_optimizations;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -114,8 +114,7 @@ fn main() -> kompari::Result<()> {
             start_review_server(&diff_config, &report_config, args.args.port)?
         }
         Args::SizeCheck(args) => {
-            let results = check_size_optimizations(&args.path, args.args.optimize)?;
-            print_size_optimization_results(&results)?;
+            check_size_optimizations(&args.path, &args.args)?;
         }
     }
     Ok(())
