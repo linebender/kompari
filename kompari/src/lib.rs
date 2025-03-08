@@ -24,6 +24,7 @@ mod dirdiff;
 mod fsutils;
 mod imageutils;
 mod imgdiff;
+mod optimizations;
 
 /// The image type used throughout Kompari.
 pub type Image = image::RgbaImage;
@@ -52,3 +53,4 @@ pub use dirdiff::{DirDiff, DirDiffConfig, LeftRightError, PairResult};
 pub use fsutils::{list_image_dir, list_image_dir_names};
 pub use imageutils::{bless_image, image_to_png, load_image, optimize_png, SizeOptimizationLevel};
 pub use imgdiff::{compare_images, DiffImage, DiffImageMethod, ImageDifference};
+pub use optimizations::{check_size_optimizations, OptimizationResult};

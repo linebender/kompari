@@ -13,31 +13,29 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 use clap::Parser;
-use kompari::DirDiffConfig;
-use kompari_html::{render_html_report, start_review_server};
+use kompari::{check_size_optimizations, DirDiffConfig};
+use kompari_html::{render_html_report, start_review_server, ReportConfig};
+use kompari_tasks::output::print_size_optimization_results;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-pub struct ReportArgs {
-    /// Output filename
-    #[arg(long, default_value = "report.html")]
-    output: PathBuf,
-
-    /// Embed images into the report
-    #[arg(long, default_value_t = false)]
-    embed_images: bool,
+pub struct CliReportArgs {
+    #[clap(flatten)]
+    diff_args: DiffArgs,
+    #[clap(flatten)]
+    args: kompari_tasks::args::ReportArgs,
 }
 
 #[derive(Parser, Debug)]
-pub struct ReviewArgs {
-    /// Port for web server
-    #[arg(long, default_value_t = 7200)]
-    port: u16,
+pub struct CliReviewArgs {
+    #[clap(flatten)]
+    diff_args: DiffArgs,
+    #[clap(flatten)]
+    args: kompari_tasks::args::ReviewArgs,
 }
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
+#[derive(Parser, Debug, Clone)]
+struct DiffArgs {
     /// Path to "left" images
     left_path: PathBuf,
 
@@ -67,19 +65,25 @@ struct Args {
     /// Filter filenames by name
     #[arg(long)]
     filter: Option<String>,
-
-    #[clap(subcommand)]
-    command: Command,
 }
 
 #[derive(Parser, Debug)]
-pub enum Command {
-    Report(ReportArgs),
-    Review(ReviewArgs),
+pub struct CliSizeCheckArgs {
+    path: PathBuf,
+
+    #[clap(flatten)]
+    args: kompari_tasks::args::SizeCheckArgs,
 }
 
-fn main() -> kompari::Result<()> {
-    let args = Args::parse();
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+pub enum Args {
+    Report(CliReportArgs),
+    Review(CliReviewArgs),
+    SizeCheck(CliSizeCheckArgs),
+}
+
+fn make_diff_config(args: DiffArgs) -> (DirDiffConfig, ReportConfig) {
     let mut diff_config = DirDiffConfig::new(args.left_path, args.right_path);
     diff_config.set_ignore_left_missing(args.ignore_left_missing);
     diff_config.set_ignore_right_missing(args.ignore_right_missing);
@@ -89,16 +93,30 @@ fn main() -> kompari::Result<()> {
     report_config.set_left_title(args.left_title);
     report_config.set_right_title(args.right_title);
 
-    match args.command {
-        Command::Report(args) => {
+    (diff_config, report_config)
+}
+
+fn main() -> kompari::Result<()> {
+    let args = Args::parse();
+
+    match args {
+        Args::Report(args) => {
+            let (diff_config, mut report_config) = make_diff_config(args.diff_args);
             let diff = diff_config.create_diff()?;
-            report_config.set_embed_images(args.embed_images);
+            report_config.set_embed_images(args.args.embed_images);
             let report = render_html_report(&report_config, diff.results())?;
-            let output = args.output;
+            let output = args.args.output.unwrap_or("report.html".into());
             std::fs::write(&output, report)?;
             println!("Report written into '{}'", output.display());
         }
-        Command::Review(args) => start_review_server(&diff_config, &report_config, args.port)?,
+        Args::Review(args) => {
+            let (diff_config, report_config) = make_diff_config(args.diff_args);
+            start_review_server(&diff_config, &report_config, args.args.port)?
+        }
+        Args::SizeCheck(args) => {
+            let results = check_size_optimizations(&args.path, args.args.optimize)?;
+            print_size_optimization_results(&results)?;
+        }
     }
     Ok(())
 }

@@ -12,7 +12,8 @@
 // END LINEBENDER LINT SET
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-mod args;
+pub mod args;
+pub mod output;
 mod task;
 
 pub use args::Args;
