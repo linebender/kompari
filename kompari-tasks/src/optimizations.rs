@@ -1,10 +1,14 @@
 // Copyright 2025 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
+use crate::args::SizeCheckArgs;
+use humansize::{format_size, DECIMAL};
 use kompari::{list_image_dir, optimize_png, SizeOptimizationLevel};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::cmp::min;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+use termcolor::{Color, ColorSpec, WriteColor};
 
 #[derive(Debug)]
 pub struct OptimizationResult {
@@ -72,11 +76,6 @@ pub fn check_size_optimizations(dir_path: &Path, args: &SizeCheckArgs) -> kompar
     }
     Ok(())
 }
-
-use crate::args::SizeCheckArgs;
-use humansize::{format_size, DECIMAL};
-use std::io::Write;
-use termcolor::{Color, ColorSpec, WriteColor};
 
 pub fn print_size_optimization_results(results: &[OptimizationResult]) -> kompari::Result<bool> {
     if results.is_empty() {

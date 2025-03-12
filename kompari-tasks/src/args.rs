@@ -53,6 +53,7 @@ pub struct SizeCheckArgs {
     /// Command will fail if at least one image can be optimized by more than given ratio.
     /// E.g. --improvement-limit=0.8 means that error is signaled when an image can be optimized
     /// more than 80% of its original size
+    /// (that is, the optimized image's size is 20% or less of the original).
     #[arg(long)]
     pub improvement_limit: Option<f32>,
 
