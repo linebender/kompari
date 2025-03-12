@@ -71,13 +71,16 @@ pub fn check_size_optimizations(dir_path: &Path, args: &SizeCheckArgs) -> kompar
     progressbar.finish_with_message("");
     let mut results: Vec<_> = results.into_iter().flatten().collect();
     results.sort_unstable_by(|a, b| a.path.cmp(&b.path));
-    if print_size_optimization_results(&results)? && !args.optimize {
+    if print_size_optimization_results(&results, args.optimize)? && !args.optimize {
         std::process::exit(1);
     }
     Ok(())
 }
 
-pub fn print_size_optimization_results(results: &[OptimizationResult]) -> kompari::Result<bool> {
+pub fn print_size_optimization_results(
+    results: &[OptimizationResult],
+    optimize: bool,
+) -> kompari::Result<bool> {
     if results.is_empty() {
         println!("Nothing to optimize");
         return Ok(false);
@@ -90,7 +93,7 @@ pub fn print_size_optimization_results(results: &[OptimizationResult]) -> kompar
     for result in results {
         let diff = result.old_size - result.new_size;
         stdout.set_color(ColorSpec::new().set_fg(None))?;
-        write!(stdout, "{} :", result.path.display(),)?;
+        write!(stdout, "{}: ", result.path.display(),)?;
         stdout.set_color(ColorSpec::new().set_fg(Some(Color::Cyan)))?;
         write!(stdout, "{} ", format_size(result.new_size, DECIMAL))?;
         stdout.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
@@ -114,5 +117,13 @@ pub fn print_size_optimization_results(results: &[OptimizationResult]) -> kompar
     write!(stdout, "{} ", format_size(total_size, DECIMAL))?;
     stdout.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
     writeln!(stdout, "(-{})", format_size(total_diff, DECIMAL))?;
+    stdout.set_color(ColorSpec::new().set_fg(None))?;
+    if !optimize {
+        write!(stdout, "Run with ")?;
+        stdout.set_color(ColorSpec::new().set_fg(Some(Color::Yellow)))?;
+        write!(stdout, "--optimize ")?;
+        stdout.set_color(ColorSpec::new().set_fg(None))?;
+        writeln!(stdout, "to apply the optimizations")?;
+    }
     Ok(has_error)
 }
