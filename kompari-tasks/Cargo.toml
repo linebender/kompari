@@ -18,3 +18,5 @@ kompari-html = { path = "../kompari-html" }
 clap = { workspace = true }
 termcolor = "1.4"
 humansize = "2.1"
+indicatif = "0.17"
+rayon = "1.10"  # This should be same as in oxipng
