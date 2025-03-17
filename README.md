@@ -12,33 +12,24 @@ It can be used as a stand-alone CLI tool or as a Rust crate.
 
 ## CLI
 
-### Installation
-
-Basic installation, `PNG` format only
+### Local build
 
 ```commandline
-$ cargo install kompari --features=cli
-```
-
-OR with all supported formats
-
-```commandline
-$ cargo install kompari --features=cli
+$ cargo build --release
 ```
 
 ### Usage
 
-
 Create static HTML report:
 
 ```commandline
-$ kompari report <left/image_dir> <right/image_dir>
+$ cargo run --release report <left/image_dir> <right/image_dir>
 ```
 
 Start HTTP server for interactive test blessing:
 
 ```commandline
-$ kompari review <left/image_dir> <right/image_dir>
+$ cargo run --release review <left/image_dir> <right/image_dir>
 ```
 
 
