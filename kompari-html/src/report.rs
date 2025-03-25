@@ -7,9 +7,11 @@ use base64::prelude::*;
 use chrono::SubsecRound;
 use kompari::{ImageDifference, LeftRightError, PairResult, SizeOptimizationLevel};
 use maud::{html, Markup, PreEscaped, DOCTYPE};
+use std::cmp::min;
 use std::path::Path;
 
 const IMAGE_SIZE_LIMIT: u32 = 400;
+const IMAGE_PIXELIZE_LIMIT: u32 = 400;
 
 fn embed_png_url(data: &[u8]) -> String {
     let mut url = "data:image/png;base64,".to_string();
@@ -41,7 +43,9 @@ fn render_image(
             };
             let (w, h) = html_size(size.width as u32, size.height as u32, IMAGE_SIZE_LIMIT);
             html! {
-                img class="zoom" src=(path) width=[w] height=[h] onclick="openImageDialog(this)";
+                img class="zoom" src=(path)
+                    width=[w] height=[h]
+                    onclick=(open_image_dialog(size.width as u32, size.height as u32));
             }
         }
         Some(kompari::Error::FileNotFound(_)) => {
@@ -58,6 +62,14 @@ pub fn html_size(width: u32, height: u32, size_limit: u32) -> (Option<u32>, Opti
         (Some(width.min(size_limit)), None)
     } else {
         (None, Some(height.min(size_limit)))
+    }
+}
+
+fn open_image_dialog(width: u32, height: u32) -> &'static str {
+    if min(width, height) < IMAGE_PIXELIZE_LIMIT {
+        "openImageDialog(this, true)"
+    } else {
+        "openImageDialog(this, false)"
     }
 }
 
@@ -79,7 +91,12 @@ fn render_difference_image(
                         (w, h, data)
                    };
                    @let style = if idx == 0 { None } else { Some("display: none") };
-                   img id=(format!("img-diff-{id}-{idx}")) style=[style] class="zoom" src=(embed_png_url(&data)) width=[w] height=[h] onclick="openImageDialog(this)";
+                   img id=(format!("img-diff-{id}-{idx}"))
+                       style=[style]
+                       class="zoom"
+                       src=(embed_png_url(&data))
+                       width=[w] height=[h]
+                       onclick=(open_image_dialog(di.image.width(), di.image.height()));
                 }
                 div class="tabs" {
                     @for (idx, img) in diff_images.iter().enumerate() {

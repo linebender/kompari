@@ -163,10 +163,9 @@ dialog {
 
 .zoomed-image {
     object-fit: contain;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: -o-crisp-edges;
-    image-rendering: -webkit-optimize-contrast;
-    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.zoomed-image-small {
     image-rendering: pixelated;
 }
 
@@ -276,9 +275,16 @@ input:checked + .slider:before {
 ";
 
 pub(crate) const JS_CODE: &str = "
-function openImageDialog(img) {
+function openImageDialog(img, pixelize) {
     const dialog = document.getElementById('imageDialog');
     const zoomedImg = document.getElementById('zoomedImage');
+
+    if (pixelize) {
+        zoomedImg.classList.add(\"zoomed-image-small\");
+    } else {
+        zoomedImg.classList.remove(\"zoomed-image-small\");
+    }
+
     zoomedImg.src = img.src;
     if (img.width < img.height) {
         zoomedImg.style.width = \"100%\";
