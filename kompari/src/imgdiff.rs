@@ -1,11 +1,11 @@
 // Copyright 2024 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use image::{Pixel, Rgba};
+use color::Rgba8;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
 
-use crate::Image;
+use crate::MinImage;
 
 #[derive(Debug)]
 pub enum DiffImageMethod {
@@ -29,7 +29,7 @@ impl Display for DiffImageMethod {
 #[derive(Debug)]
 pub struct DiffImage {
     pub method: DiffImageMethod,
-    pub image: Image,
+    pub image: MinImage,
 }
 
 pub enum ImageDifference {
@@ -40,7 +40,7 @@ pub enum ImageDifference {
     },
     Content {
         diff_images: Vec<DiffImage>,
-        background: Option<Rgba<u8>>,
+        background: Option<Rgba8>,
         // If the background is not detected, then the following values are related
         // to the whole image. Otherwise, they are related only to pixels that are
         // not background on at least one side
@@ -72,77 +72,99 @@ impl Debug for ImageDifference {
     }
 }
 
-fn compute_rg_diff_image(left: &Image, right: &Image) -> (Image, u64) {
+fn compute_rg_diff_image(left: &MinImage, right: &MinImage) -> (MinImage, u64) {
     let mut distance_sum = 0;
-    let diff_image_data: Vec<u8> = left
-        .pixels()
-        .zip(right.pixels())
-        .flat_map(|(&p1, &p2)| {
+    let diff_image_data = left
+        .data
+        .iter()
+        .zip(&right.data)
+        .map(|(&p1, &p2)| {
             let (diff_min, diff_max) = pixel_min_max_distance(p1, p2);
             distance_sum += diff_max.max(diff_min) as u64;
             if diff_min > diff_max {
-                [diff_min, 0, 0, u8::MAX]
+                Rgba8 {
+                    r: diff_min,
+                    g: 0,
+                    b: 0,
+                    a: u8::MAX,
+                }
             } else {
-                [0, diff_max, 0, u8::MAX]
-            }
-        })
-        .collect();
-    let image = Image::from_vec(left.width(), left.height(), diff_image_data)
-        .expect("Same number of pixels as left and right, which have the same dimensions");
-    (image, distance_sum)
-}
-
-fn compute_overlay_diff_image(left: &Image, right: &Image) -> Image {
-    let diff_image_data: Vec<u8> = left
-        .pixels()
-        .zip(right.pixels())
-        .flat_map(|(&p1, &p2)| {
-            let distance = pixel_distance(p1, p2);
-            if distance > 0 {
-                p2.0
-            } else {
-                let [r, g, b, a] = p1.0;
-                if a > 128 {
-                    [r, g, b, a / 3]
-                } else {
-                    [r, g, b, 0]
+                Rgba8 {
+                    r: 0,
+                    g: diff_max,
+                    b: 0,
+                    a: u8::MAX,
                 }
             }
         })
         .collect();
-    Image::from_vec(left.width(), left.height(), diff_image_data)
-        .expect("Same number of pixels as left and right, which have the same dimensions")
+    let image = MinImage {
+        width: left.width,
+        height: left.height,
+        data: diff_image_data,
+    };
+    (image, distance_sum)
 }
 
-fn detect_background(image: &Image) -> Option<Rgba<u8>> {
-    let mut counter: HashMap<Rgba<u8>, u32> = HashMap::new();
-    for pixel in image.pixels() {
-        counter.entry(*pixel).and_modify(|c| *c += 1).or_insert(1);
+fn compute_overlay_diff_image(left: &MinImage, right: &MinImage) -> MinImage {
+    let diff_image_data = left
+        .data
+        .iter()
+        .zip(&right.data)
+        .map(|(&p1, &p2)| {
+            let distance = pixel_distance(p1, p2);
+            if distance > 0 {
+                p2
+            } else {
+                // Opaque pixels with no difference are made more transparent; we hide sufficiently translucenst ones
+                let alpha = if p1.a > 128 { p1.a / 3 } else { 0 };
+                Rgba8 { a: alpha, ..p1 }
+            }
+        })
+        .collect();
+    MinImage {
+        width: left.width,
+        height: left.height,
+        data: diff_image_data,
     }
+}
+
+fn detect_background(image: &MinImage) -> Option<Rgba8> {
+    // Color in u32 format to count in image. u32 key because Rgba8 isn't Hash.
+    let mut counter: HashMap<u32, u32> = HashMap::new();
+    for pixel in &image.data {
+        counter
+            .entry(pixel.to_u32())
+            .and_modify(|c| *c += 1)
+            .or_insert(1);
+    }
+    // If no pixels take up more than a quarter of the image, there is no background
+    let threshold = u32::try_from(image.data.len() / 4).unwrap();
     counter
         .into_iter()
         .max_by_key(|(_, c)| *c)
-        .filter(|(_, c)| *c > (image.height() * image.height()) / 4)
-        .map(|(p, _)| p)
+        .filter(|(_, c)| *c > threshold)
+        .map(|(packed, _)| Rgba8::from_u32(packed))
 }
 
 /// Find differences between two images
-pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
-    if left.width() != right.width() || left.height() != right.height() {
+pub fn compare_images(left: &MinImage, right: &MinImage) -> ImageDifference {
+    if left.width != right.width || left.height != right.height {
         return ImageDifference::SizeMismatch {
-            left_size: (left.width(), left.height()),
-            right_size: (right.width(), right.height()),
+            left_size: (left.width, left.height),
+            right_size: (right.width, right.height),
         };
     }
 
-    let mut n_pixels = left.width() as u64 * right.height() as u64;
+    let mut n_pixels = left.width as u64 * right.height as u64;
 
     let background = detect_background(left)
         .and_then(|bg1| detect_background(right).and_then(|bg2| (bg1 == bg2).then_some(bg1)));
 
     let n_different_pixels: u64 = if let Some(bg) = background {
-        left.pixels()
-            .zip(right.pixels())
+        left.data
+            .iter()
+            .zip(&right.data)
             .map(|(pl, pr)| {
                 if pl == pr {
                     if *pl == bg {
@@ -155,8 +177,9 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
             })
             .sum()
     } else {
-        left.pixels()
-            .zip(right.pixels())
+        left.data
+            .iter()
+            .zip(&right.data)
             .map(|(pl, pr)| if pl == pr { 0 } else { 1 })
             .sum()
     };
@@ -184,19 +207,19 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
     }
 }
 
-fn pixel_distance(left: Rgba<u8>, right: Rgba<u8>) -> u64 {
-    left.channels()
+fn pixel_distance(left: Rgba8, right: Rgba8) -> u64 {
+    left.to_u8_array()
         .iter()
-        .zip(right.channels())
+        .zip(&right.to_u8_array())
         .map(|(c_left, c_right)| c_left.abs_diff(*c_right).into())
         .max()
         .unwrap_or_default()
 }
 
-fn pixel_min_max_distance(left: Rgba<u8>, right: Rgba<u8>) -> (u8, u8) {
-    left.channels()
+fn pixel_min_max_distance(left: Rgba8, right: Rgba8) -> (u8, u8) {
+    left.to_u8_array()
         .iter()
-        .zip(right.channels())
+        .zip(&right.to_u8_array())
         .fold((0, 0), |(min, max), (c1, c2)| {
             if c2 > c1 {
                 (min, max.max(c2 - c1))

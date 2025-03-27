@@ -13,6 +13,7 @@ repository = "https://github.com/linebender/kompari"
 
 [workspace.dependencies]
 image = { version = "0.25", default-features = false, features = ["png"] }
+png = "0.17.16"
 thiserror = { version = "2" }
 clap = { version = "4.5", features = ["derive"] }
 oxipng = { version = "9.1", features = [
@@ -20,7 +21,7 @@ oxipng = { version = "9.1", features = [
     "zopfli",
     "filetime",
 ], default-features = false }
-rayon = "1.10"  # Make sure that we are using the version as in oxipng
+rayon = "1.10" # Make sure that we are using the version as in oxipng
 log = "0.4"
 
 [workspace.lints]

@@ -16,7 +16,9 @@
 // END LINEBENDER LINT SET
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-pub use image;
+pub use color;
+pub use png;
+
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -24,9 +26,12 @@ mod dirdiff;
 mod fsutils;
 mod imageutils;
 mod imgdiff;
+mod minimal_image;
+
+pub use crate::minimal_image::MinImage;
 
 /// The image type used throughout Kompari.
-pub type Image = image::RgbaImage;
+// pub type Image = image::RgbaImage;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -38,9 +43,6 @@ pub enum Error {
 
     #[error("File not found: `{0}`")]
     FileNotFound(PathBuf),
-
-    #[error("Image error")]
-    ImageError(#[from] image::ImageError),
 
     #[error("Error `{0}`")]
     GenericError(String),
