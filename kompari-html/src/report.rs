@@ -5,7 +5,7 @@ use crate::pageconsts::{CSS_STYLE, ICON, JS_CODE};
 use crate::ReportConfig;
 use base64::prelude::*;
 use chrono::SubsecRound;
-use kompari::{ImageDifference, LeftRightError, PairResult, SizeOptimizationLevel};
+use kompari::{ImageDifference, LeftRightError, PairResult};
 use maud::{html, Markup, PreEscaped, DOCTYPE};
 use rayon::iter::IndexedParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
@@ -31,7 +31,7 @@ fn render_image(
         None => {
             let (path, size) = if config.embed_images {
                 let image_data =
-                    kompari::optimize_png(std::fs::read(path)?, SizeOptimizationLevel::Fast);
+                    kompari::optimize_png(std::fs::read(path)?, config.size_optimization);
                 (
                     embed_png_url(&image_data),
                     imagesize::blob_size(&image_data)
@@ -77,6 +77,7 @@ fn open_image_dialog(width: u32, height: u32) -> &'static str {
 }
 
 fn render_difference_image(
+    config: &ReportConfig,
     id: usize,
     difference: &Result<ImageDifference, LeftRightError>,
 ) -> Markup {
@@ -90,7 +91,7 @@ fn render_difference_image(
                             di.image.height(),
                             IMAGE_SIZE_LIMIT,
                         );
-                        let data = kompari::image_to_png(&di.image, SizeOptimizationLevel::Fast);
+                        let data = kompari::image_to_png(&di.image, config.size_optimization);
                         (w, h, data)
                    };
                    @let style = if idx == 0 { None } else { Some("display: none") };
@@ -200,7 +201,7 @@ fn render_pair_diff(
                     }
                     div class="image-box" {
                         h3 { "Difference"}
-                        (render_difference_image(id, &pair_diff.image_diff))
+                        (render_difference_image(config, id, &pair_diff.image_diff))
                     }
                 }
             }

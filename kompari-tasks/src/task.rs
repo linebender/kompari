@@ -47,6 +47,8 @@ impl Task {
                 if report_args.embed_images {
                     self.report_config.set_embed_images(true);
                 }
+                self.report_config
+                    .set_size_optimization(report_args.optimize_size.to_level());
                 let output: &Path = report_args
                     .output
                     .as_deref()
@@ -57,6 +59,8 @@ impl Task {
                 println!("Report written into '{}'", output.display());
             }
             Command::Review(args) => {
+                self.report_config
+                    .set_size_optimization(args.optimize_size.to_level());
                 start_review_server(&self.diff_config, &self.report_config, args.port)?
             }
             Command::Clean => {

@@ -5,7 +5,7 @@ use crate::Image;
 use std::io::Cursor;
 use std::path::Path;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum SizeOptimizationLevel {
     None,
     Fast,

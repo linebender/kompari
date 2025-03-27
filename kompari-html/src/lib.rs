@@ -22,6 +22,7 @@ pub struct ReportConfig {
     right_title: String,
     embed_images: bool,
     is_review: bool,
+    size_optimization: SizeOptimizationLevel,
 }
 
 impl Default for ReportConfig {
@@ -31,6 +32,7 @@ impl Default for ReportConfig {
             right_title: "Right image".to_string(),
             embed_images: false,
             is_review: false,
+            size_optimization: SizeOptimizationLevel::None,
         }
     }
 }
@@ -45,10 +47,14 @@ impl ReportConfig {
     pub fn set_embed_images(&mut self, value: bool) {
         self.embed_images = value
     }
+    pub fn set_size_optimization(&mut self, value: SizeOptimizationLevel) {
+        self.size_optimization = value
+    }
     pub fn set_review(&mut self, value: bool) {
         self.is_review = value
     }
 }
 
+use kompari::SizeOptimizationLevel;
 pub use report::render_html_report;
 pub use review::start_review_server;
