@@ -76,7 +76,15 @@ impl MinImage {
             return Err(crate::Error::ImageNotRgba);
         };
 
-        let mut buf = Vec::<Rgba8>::with_capacity(reader.output_buffer_size() / 4);
+        let mut buf = vec![
+            Rgba8 {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 0
+            };
+            reader.output_buffer_size() / 4
+        ];
         let data = bytemuck::cast_slice_mut(&mut buf);
         let (width, height) = reader.info().size();
         reader.next_frame(data)?;
