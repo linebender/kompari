@@ -7,6 +7,9 @@ use base64::prelude::*;
 use chrono::SubsecRound;
 use kompari::{ImageDifference, LeftRightError, PairResult, SizeOptimizationLevel};
 use maud::{html, Markup, PreEscaped, DOCTYPE};
+use rayon::iter::IndexedParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
 use std::cmp::min;
 use std::path::Path;
 
@@ -207,6 +210,11 @@ fn render_pair_diff(
 
 pub fn render_html_report(config: &ReportConfig, diffs: &[PairResult]) -> kompari::Result<String> {
     let now = chrono::Local::now().round_subsecs(0);
+    let rendered_diffs: Vec<Markup> = diffs
+        .par_iter()
+        .enumerate()
+        .map(|(id, pair_diff)| render_pair_diff(config, id, pair_diff))
+        .collect::<kompari::Result<Vec<_>>>()?;
     let title = PreEscaped(if config.is_review {
         "Kompari review"
     } else {
@@ -240,8 +248,8 @@ pub fn render_html_report(config: &ReportConfig, diffs: &[PairResult]) -> kompar
                     span id="errorMsg" {};
                 }
                 script { (PreEscaped(JS_CODE)) }
-                @for (id, pair_diff) in diffs.iter().enumerate() {
-                   (render_pair_diff(config, id, pair_diff)?)
+                @for chunk in rendered_diffs  {
+                   (chunk)
                 }
             }
         }

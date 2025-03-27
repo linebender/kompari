@@ -719,6 +719,7 @@ dependencies = [
  "image",
  "log",
  "oxipng",
+ "rayon",
  "thiserror",
  "walkdir",
 ]
@@ -745,6 +746,7 @@ dependencies = [
  "imagesize",
  "kompari",
  "maud",
+ "rayon",
  "serde",
  "tokio",
 ]
