@@ -44,8 +44,20 @@ pub enum Error {
     #[error("File not found: `{0}`")]
     FileNotFound(PathBuf),
 
+    #[error("An input png image was grayscale.")]
+    ImageNotRgba,
+    #[error("Image is unresolved LFS file. Maybe you need to install lfs - https://git-lfs.com/?")]
+    // TODO: My plan is that Kompari Tasks will catch this error at a higher level, and give a more detailed message for it
+    // This avoids spamming a really long message for each test.
+    LFSMissing,
+
     #[error("Error `{0}`")]
-    GenericError(String),
+    GenericError(Box<dyn std::error::Error + Send + Sync>),
+
+    #[error(transparent)]
+    PngDecoding(#[from] png::DecodingError),
+    #[error(transparent)]
+    PngEncoding(#[from] png::EncodingError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

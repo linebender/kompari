@@ -36,13 +36,12 @@ fn render_image(
                 (
                     embed_png_url(&image_data),
                     imagesize::blob_size(&image_data)
-                        .map_err(|e| kompari::Error::GenericError(e.to_string()))?,
+                        .map_err(|e| kompari::Error::GenericError(Box::new(e)))?,
                 )
             } else {
                 (
                     path.display().to_string(),
-                    imagesize::size(path)
-                        .map_err(|e| kompari::Error::GenericError(e.to_string()))?,
+                    imagesize::size(path).map_err(|e| kompari::Error::GenericError(Box::new(e)))?,
                 )
             };
             let (w, h) = html_size(size.width as u32, size.height as u32, IMAGE_SIZE_LIMIT);

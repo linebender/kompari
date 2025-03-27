@@ -61,12 +61,8 @@ impl MinImage {
         let mut encoder = png::Encoder::new(write, self.width, self.height);
         encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
-        let mut writer = encoder
-            .write_header()
-            .map_err(|e| crate::Error::GenericError(format!("Error encoding PNG: {e}")))?;
-        writer
-            .write_image_data(bytemuck::cast_slice(&self.data))
-            .map_err(|e| crate::Error::GenericError(format!("Error encoding PNG: {e}")))?;
+        let mut writer = encoder.write_header()?;
+        writer.write_image_data(bytemuck::cast_slice(&self.data))?;
         Ok(())
     }
 
@@ -75,17 +71,15 @@ impl MinImage {
         decoder
             // We treat all images as 8 bit per channel, for simplicity.
             .set_transformations(Transformations::normalize_to_color8() | Transformations::ALPHA);
-        let mut reader = decoder.read_info().unwrap_or_else(|e| todo!("Handle {e}"));
+        let mut reader = decoder.read_info()?;
         let (png::ColorType::Rgba, png::BitDepth::Eight) = reader.output_color_type() else {
-            todo!("Give a proper error type for image not being RGBA8");
+            return Err(crate::Error::ImageNotRgba);
         };
 
         let mut buf = Vec::<Rgba8>::with_capacity(reader.output_buffer_size() / 4);
         let data = bytemuck::cast_slice_mut(&mut buf);
         let (width, height) = reader.info().size();
-        reader
-            .next_frame(data)
-            .unwrap_or_else(|e| todo!("Handle {e}"));
+        reader.next_frame(data)?;
         Ok(Self {
             width,
             height,
@@ -102,11 +96,7 @@ fn try_detect_lfs(
     let mut buf = vec![0; LFS_HEADER.len()];
     reader.read_exact(&mut buf)?;
     if buf == LFS_HEADER {
-        // TODO: More advanced formatting.
-        Ok(Some(crate::Error::GenericError(
-            "Image is unresolved LFS file. Maybe you need to install lfs - https://git-lfs.com/?"
-                .into(),
-        )))
+        Ok(Some(crate::Error::LFSMissing))
     } else {
         Ok(None)
     }
