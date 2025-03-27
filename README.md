@@ -35,7 +35,7 @@ $ cargo run --release review <left/image_dir> <right/image_dir>
 
 ## Minimum supported Rust Version (MSRV)
 
-This version of Kompari has been verified to compile with **Rust 1.78** and later.
+This version of Kompari has been verified to compile with **Rust 1.82** and later.
 
 Future versions of Kompari might increase the Rust version requirement.
 It will not be treated as a breaking change and as such can even happen with small patch releases.
