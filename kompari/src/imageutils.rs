@@ -1,8 +1,8 @@
 // Copyright 2025 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use crate::Image;
-use std::io::Cursor;
+use crate::MinImage;
+use std::fs::File;
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy)]
@@ -12,12 +12,13 @@ pub enum SizeOptimizationLevel {
     High,
 }
 
-pub fn load_image(path: &Path) -> crate::Result<Image> {
+pub fn load_image(path: &Path) -> crate::Result<MinImage> {
     log::debug!("Loading image {}", path.display());
     if !path.is_file() {
         return Err(crate::Error::FileNotFound(path.to_path_buf()));
     }
-    Ok(image::ImageReader::open(path)?.decode()?.into_rgba8())
+    let file = File::open(path)?;
+    MinImage::decode_from_png(file)
 }
 
 #[cfg(feature = "oxipng")]
@@ -38,11 +39,9 @@ pub fn optimize_png(data: Vec<u8>, _opt_level: SizeOptimizationLevel) -> Vec<u8>
     data
 }
 
-pub fn image_to_png(image: &Image, opt_level: SizeOptimizationLevel) -> Vec<u8> {
+pub fn image_to_png(image: &MinImage, opt_level: SizeOptimizationLevel) -> Vec<u8> {
     let mut data = Vec::new();
-    image
-        .write_to(&mut Cursor::new(&mut data), image::ImageFormat::Png)
-        .unwrap();
+    image.encode_to_png(&mut data).unwrap();
     optimize_png(data, opt_level)
 }
 
