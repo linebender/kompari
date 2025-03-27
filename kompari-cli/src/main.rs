@@ -89,7 +89,7 @@ fn make_diff_config(args: DiffArgs) -> (DirDiffConfig, ReportConfig) {
     diff_config.set_ignore_right_missing(args.ignore_right_missing);
     diff_config.set_filter_name(args.filter);
 
-    let mut report_config = kompari_html::ReportConfig::default();
+    let mut report_config = ReportConfig::default();
     report_config.set_left_title(args.left_title);
     report_config.set_right_title(args.right_title);
 
