@@ -86,8 +86,8 @@ fn render_difference_image(
                 @for (idx, di) in diff_images.iter().enumerate() {
                     @let (w, h, data) = {
                         let (w, h) = html_size(
-                            di.image.width(),
-                            di.image.height(),
+                            di.image.width,
+                            di.image.height,
                             IMAGE_SIZE_LIMIT,
                         );
                         let data = kompari::image_to_png(&di.image, SizeOptimizationLevel::Fast);
@@ -99,7 +99,7 @@ fn render_difference_image(
                        class="zoom"
                        src=(embed_png_url(&data))
                        width=[w] height=[h]
-                       onclick=(open_image_dialog(di.image.width(), di.image.height()));
+                       onclick=(open_image_dialog(di.image.width, di.image.height));
                 }
                 div class="tabs" {
                     @for (idx, img) in diff_images.iter().enumerate() {

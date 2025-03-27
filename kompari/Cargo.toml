@@ -21,12 +21,14 @@ targets = []
 
 [dependencies]
 # For the bulk of Kompari's functionality
-image = { workspace = true }
+color = { version = "0.2.3", features = ["bytemuck"] }
+png = { workspace = true }
 thiserror = { workspace = true }
 walkdir = "2.5"
 log = { workspace = true }
 oxipng = { workspace = true, optional = true }
 rayon = { workspace = true }
+bytemuck = { default-features = false, version = "1.22.0" }
 
 [features]
 default = ["oxipng"]
