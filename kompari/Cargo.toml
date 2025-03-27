@@ -26,6 +26,7 @@ thiserror = { workspace = true }
 walkdir = "2.5"
 log = { workspace = true }
 oxipng = { workspace = true, optional = true }
+rayon = { workspace = true }
 
 [features]
 default = ["oxipng"]

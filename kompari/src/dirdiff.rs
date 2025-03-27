@@ -3,6 +3,8 @@
 
 use crate::imgdiff::{compare_images, ImageDifference};
 use crate::{list_image_dir_names, load_image};
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -40,7 +42,7 @@ impl DirDiffConfig {
             self.filter_name.as_deref(),
         )?;
         let diffs: Vec<_> = pairs
-            .into_iter()
+            .into_par_iter()
             .filter_map(|pair| {
                 let image_diff = compute_pair_diff(&pair);
                 if matches!(image_diff, Ok(ImageDifference::None)) {
