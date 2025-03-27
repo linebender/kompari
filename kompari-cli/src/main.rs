@@ -104,13 +104,15 @@ fn main() -> kompari::Result<()> {
             let (diff_config, mut report_config) = make_diff_config(args.diff_args);
             let diff = diff_config.create_diff()?;
             report_config.set_embed_images(args.args.embed_images);
+            report_config.set_size_optimization(args.args.optimize_size.to_level());
             let report = render_html_report(&report_config, diff.results())?;
             let output = args.args.output.unwrap_or("report.html".into());
             std::fs::write(&output, report)?;
             println!("Report written into '{}'", output.display());
         }
         Args::Review(args) => {
-            let (diff_config, report_config) = make_diff_config(args.diff_args);
+            let (diff_config, mut report_config) = make_diff_config(args.diff_args);
+            report_config.set_size_optimization(args.args.optimize_size.to_level());
             start_review_server(&diff_config, &report_config, args.args.port)?
         }
         Args::SizeCheck(args) => {

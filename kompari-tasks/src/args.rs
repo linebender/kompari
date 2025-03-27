@@ -1,7 +1,8 @@
 // Copyright 2024 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
+use kompari::SizeOptimizationLevel;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -20,6 +21,24 @@ pub enum Command {
     SizeCheck(SizeCheckArgs),
 }
 
+#[derive(ValueEnum, Debug, Clone, Copy)]
+#[clap(rename_all = "lowercase")]
+pub enum SizeOptimization {
+    None,
+    Fast,
+    High,
+}
+
+impl SizeOptimization {
+    pub fn to_level(&self) -> SizeOptimizationLevel {
+        match self {
+            SizeOptimization::None => SizeOptimizationLevel::None,
+            SizeOptimization::Fast => SizeOptimizationLevel::Fast,
+            SizeOptimization::High => SizeOptimizationLevel::High,
+        }
+    }
+}
+
 #[derive(Parser, Debug)]
 pub struct ReportArgs {
     /// Output filename
@@ -29,6 +48,10 @@ pub struct ReportArgs {
     /// Embed images into the report
     #[arg(long, default_value_t = false)]
     pub embed_images: bool,
+
+    /// Optimize image sizes in HTML report
+    #[arg(long, default_value = "none")]
+    pub optimize_size: SizeOptimization,
 }
 
 #[derive(Parser, Debug)]
@@ -36,6 +59,10 @@ pub struct ReviewArgs {
     /// Port for web server
     #[arg(long, default_value_t = 7200)]
     pub port: u16,
+
+    /// Optimize image sizes in generated HTML
+    #[arg(long, default_value = "none")]
+    pub optimize_size: SizeOptimization,
 }
 
 #[derive(Parser, Debug)]
