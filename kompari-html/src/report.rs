@@ -5,6 +5,7 @@ use crate::pageconsts::{CSS_STYLE, ICON, JS_CODE};
 use crate::ReportConfig;
 use base64::prelude::*;
 use chrono::SubsecRound;
+use kompari::image::Rgba;
 use kompari::{ImageDifference, LeftRightError, PairResult};
 use maud::{html, Markup, PreEscaped, DOCTYPE};
 use rayon::iter::IndexedParallelIterator;
@@ -119,6 +120,32 @@ fn render_difference_image(
     }
 }
 
+fn rgba_to_hex(rgba: Rgba<u8>) -> String {
+    let [r, g, b, a] = rgba.0;
+    if a == u8::MAX {
+        format!("#{:02X}{:02X}{:02X}", r, g, b)
+    } else {
+        format!("#{:02X}{:02X}{:02X}{:02X}", r, g, b, a)
+    }
+}
+
+fn render_stat_color(label: &str, value_type: &str, color: Rgba<u8>) -> Markup {
+    let hex = rgba_to_hex(color);
+    html! {
+        div .stat-item {
+            div .stat-label {
+                (label)
+            }
+            @let value_class = format!("stat-value {}", value_type);
+            div class=(value_class) {
+                (hex) div .color-square style=(format!("background-color: {}", hex))  {
+
+                }
+            }
+        }
+    }
+}
+
 fn render_stat_item(label: &str, value_type: &str, value: &str) -> Markup {
     html! {
         div .stat-item {
@@ -151,16 +178,26 @@ fn render_difference_info(
             n_pixels,
             n_different_pixels,
             distance_sum,
+            background,
             ..
         }) => {
             let n_pixels = (*n_pixels) as f32;
             let pct = *n_different_pixels as f32 / n_pixels * 100.0;
             let distance_sum = *distance_sum as f32 / 255.0; // Normalize
             let avg_color_distance = distance_sum / n_pixels;
-            html! {
-                (render_stat_item("Different pixels", "warning", &format!("{n_different_pixels} ({pct:.1}%)")))
-                (render_stat_item("Color distance", "", &format!("{distance_sum:.3}")))
-                (render_stat_item("Avg. color distance", "", &format!("{avg_color_distance:.4}")))
+            if let Some(bg) = background {
+                html! {
+                    (render_stat_item("Different pixels", "warning", &format!("{n_different_pixels} ({pct:.1}%)")))
+                    (render_stat_item("Color distance", "", &format!("{distance_sum:.3}")))
+                    (render_stat_item("Avg. color distance", "", &format!("{avg_color_distance:.4}")))
+                    (render_stat_color("Background", "", *bg))
+                }
+            } else {
+                html! {
+                    (render_stat_item("Different pixels", "warning", &format!("{n_different_pixels} ({pct:.1}%)")))
+                    (render_stat_item("Color distance", "", &format!("{distance_sum:.3}")))
+                    (render_stat_item("Avg. color distance", "", &format!("{avg_color_distance:.4}")))
+                }
             }
         }
         Err(e) if e.is_missing_file_error() => render_stat_item("Status", "error", "Missing file"),

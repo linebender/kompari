@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use image::{Pixel, Rgba};
+use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::Image;
@@ -38,10 +39,14 @@ pub enum ImageDifference {
         right_size: (u32, u32),
     },
     Content {
+        diff_images: Vec<DiffImage>,
+        background: Option<Rgba<u8>>,
+        // If the background is not detected, then the following values are related
+        // to the whole image. Otherwise, they are related only to pixels that are
+        // not background on at least one side
         n_pixels: u64,
         n_different_pixels: u64,
         distance_sum: u64,
-        diff_images: Vec<DiffImage>,
     },
 }
 
@@ -109,6 +114,18 @@ fn compute_overlay_diff_image(left: &Image, right: &Image) -> Image {
         .expect("Same number of pixels as left and right, which have the same dimensions")
 }
 
+fn detect_background(image: &Image) -> Option<Rgba<u8>> {
+    let mut counter: HashMap<Rgba<u8>, u32> = HashMap::new();
+    for pixel in image.pixels() {
+        counter.entry(*pixel).and_modify(|c| *c += 1).or_insert(1);
+    }
+    counter
+        .into_iter()
+        .max_by_key(|(_, c)| *c)
+        .filter(|(_, c)| *c > (image.height() * image.height()) / 4)
+        .map(|(p, _)| p)
+}
+
 /// Find differences between two images
 pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
     if left.width() != right.width() || left.height() != right.height() {
@@ -118,12 +135,31 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
         };
     }
 
-    let n_different_pixels: u64 = left
-        .pixels()
-        .zip(right.pixels())
-        .map(|(pl, pr)| if pl == pr { 0 } else { 1 })
-        .sum();
+    let mut n_pixels = left.width() as u64 * right.height() as u64;
 
+    let background = detect_background(left)
+        .and_then(|bg1| detect_background(right).and_then(|bg2| (bg1 == bg2).then_some(bg1)));
+
+    let n_different_pixels: u64 = if let Some(bg) = background {
+        left.pixels()
+            .zip(right.pixels())
+            .map(|(pl, pr)| {
+                if pl == pr {
+                    if *pl == bg {
+                        n_pixels -= 1;
+                    };
+                    0
+                } else {
+                    1
+                }
+            })
+            .sum()
+    } else {
+        left.pixels()
+            .zip(right.pixels())
+            .map(|(pl, pr)| if pl == pr { 0 } else { 1 })
+            .sum()
+    };
     if n_different_pixels == 0 {
         return ImageDifference::None;
     }
@@ -131,9 +167,10 @@ pub fn compare_images(left: &Image, right: &Image) -> ImageDifference {
     let (rg_diff_image, distance_sum) = compute_rg_diff_image(left, right);
     let overlay_diff_image = compute_overlay_diff_image(left, right);
     ImageDifference::Content {
-        n_pixels: left.width() as u64 * right.height() as u64,
+        n_pixels,
         n_different_pixels,
         distance_sum,
+        background,
         diff_images: vec![
             DiffImage {
                 method: DiffImageMethod::RedGreen,

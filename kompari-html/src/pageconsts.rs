@@ -272,6 +272,15 @@ input:checked + .slider:before {
     color: #666;
     font-size: 80%;
 }
+
+.color-square {
+    margin-left: 10px;
+    margin-right: 10px;
+    display: inline-block;
+    width: 10px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid black;
 ";
 
 pub(crate) const JS_CODE: &str = "
