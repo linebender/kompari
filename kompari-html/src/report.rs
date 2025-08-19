@@ -5,7 +5,7 @@ use crate::pageconsts::{CSS_STYLE, ICON, JS_CODE};
 use crate::ReportConfig;
 use base64::prelude::*;
 use chrono::SubsecRound;
-use kompari::image::Rgba;
+use kompari::color::Rgba8;
 use kompari::{ImageDifference, LeftRightError, PairResult};
 use maud::{html, Markup, PreEscaped, DOCTYPE};
 use rayon::iter::IndexedParallelIterator;
@@ -36,13 +36,12 @@ fn render_image(
                 (
                     embed_png_url(&image_data),
                     imagesize::blob_size(&image_data)
-                        .map_err(|e| kompari::Error::GenericError(e.to_string()))?,
+                        .map_err(|e| kompari::Error::GenericError(Box::new(e)))?,
                 )
             } else {
                 (
                     path.display().to_string(),
-                    imagesize::size(path)
-                        .map_err(|e| kompari::Error::GenericError(e.to_string()))?,
+                    imagesize::size(path).map_err(|e| kompari::Error::GenericError(Box::new(e)))?,
                 )
             };
             let (w, h) = html_size(size.width as u32, size.height as u32, IMAGE_SIZE_LIMIT);
@@ -88,8 +87,8 @@ fn render_difference_image(
                 @for (idx, di) in diff_images.iter().enumerate() {
                     @let (w, h, data) = {
                         let (w, h) = html_size(
-                            di.image.width(),
-                            di.image.height(),
+                            di.image.width,
+                            di.image.height,
                             IMAGE_SIZE_LIMIT,
                         );
                         let data = kompari::image_to_png(&di.image, config.size_optimization);
@@ -101,7 +100,7 @@ fn render_difference_image(
                        class="zoom"
                        src=(embed_png_url(&data))
                        width=[w] height=[h]
-                       onclick=(open_image_dialog(di.image.width(), di.image.height()));
+                       onclick=(open_image_dialog(di.image.width, di.image.height));
                 }
                 div class="tabs" {
                     @for (idx, img) in diff_images.iter().enumerate() {
@@ -120,8 +119,8 @@ fn render_difference_image(
     }
 }
 
-fn rgba_to_hex(rgba: Rgba<u8>) -> String {
-    let [r, g, b, a] = rgba.0;
+fn rgba_to_hex(rgba: Rgba8) -> String {
+    let Rgba8 { r, g, b, a } = rgba;
     if a == u8::MAX {
         format!("#{:02X}{:02X}{:02X}", r, g, b)
     } else {
@@ -129,7 +128,7 @@ fn rgba_to_hex(rgba: Rgba<u8>) -> String {
     }
 }
 
-fn render_stat_color(label: &str, value_type: &str, color: Rgba<u8>) -> Markup {
+fn render_stat_color(label: &str, value_type: &str, color: Rgba8) -> Markup {
     let hex = rgba_to_hex(color);
     html! {
         div .stat-item {

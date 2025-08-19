@@ -16,7 +16,9 @@
 // END LINEBENDER LINT SET
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-pub use image;
+pub use color;
+pub use png;
+
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -24,9 +26,12 @@ mod dirdiff;
 mod fsutils;
 mod imageutils;
 mod imgdiff;
+mod minimal_image;
+
+pub use crate::minimal_image::MinImage;
 
 /// The image type used throughout Kompari.
-pub type Image = image::RgbaImage;
+// pub type Image = image::RgbaImage;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -39,11 +44,20 @@ pub enum Error {
     #[error("File not found: `{0}`")]
     FileNotFound(PathBuf),
 
-    #[error("Image error")]
-    ImageError(#[from] image::ImageError),
+    #[error("An input png image was grayscale.")]
+    ImageNotRgba,
+    #[error("Image is unresolved LFS file. Maybe you need to install lfs - https://git-lfs.com/?")]
+    // TODO: My plan is that Kompari Tasks will catch this error at a higher level, and give a more detailed message for it
+    // This avoids spamming a really long message for each test.
+    LFSMissing,
 
     #[error("Error `{0}`")]
-    GenericError(String),
+    GenericError(Box<dyn std::error::Error + Send + Sync>),
+
+    #[error(transparent)]
+    PngDecoding(#[from] png::DecodingError),
+    #[error(transparent)]
+    PngEncoding(#[from] png::EncodingError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
