@@ -38,7 +38,7 @@ pub enum Error {
     #[error("IO error")]
     IoError(#[from] std::io::Error),
 
-    #[error("Path is a directory: `{0}`")]
+    #[error("Path is not a directory: `{0}`")]
     NotDirectory(PathBuf),
 
     #[error("File not found: `{0}`")]
