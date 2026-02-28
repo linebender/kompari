@@ -44,7 +44,7 @@ pub enum Error {
     #[error("File not found: `{0}`")]
     FileNotFound(PathBuf),
 
-    #[error("An input png image was grayscale.")]
+    #[error("An input png image has an unsupported color format (expected RGBA 8-bit output after transformations).")]
     ImageNotRgba,
     #[error("Image is unresolved LFS file. Maybe you need to install lfs - https://git-lfs.com/?")]
     // TODO: My plan is that Kompari Tasks will catch this error at a higher level, and give a more detailed message for it

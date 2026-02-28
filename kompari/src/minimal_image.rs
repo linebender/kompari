@@ -32,8 +32,6 @@ impl std::fmt::Debug for MinImage {
 
 impl MinImage {
     /// Utility to decode from the png data provided by reader into a `MinImage`.
-    ///
-    /// This method assumes that the image is not grayscale.
     pub fn decode_from_png(mut reader: impl io::Read + io::Seek) -> Result<Self, crate::Error> {
         let start_location = reader.stream_position();
         let error = match Self::png_decode_internal(&mut reader) {
@@ -72,27 +70,48 @@ impl MinImage {
             // We treat all images as 8 bit per channel, for simplicity.
             .set_transformations(Transformations::normalize_to_color8() | Transformations::ALPHA);
         let mut reader = decoder.read_info()?;
-        let (png::ColorType::Rgba, png::BitDepth::Eight) = reader.output_color_type() else {
-            return Err(crate::Error::ImageNotRgba);
-        };
-
-        let mut buf = vec![
-            Rgba8 {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0
-            };
-            reader.output_buffer_size() / 4
-        ];
-        let data = bytemuck::cast_slice_mut(&mut buf);
         let (width, height) = reader.info().size();
-        reader.next_frame(data)?;
-        Ok(Self {
-            width,
-            height,
-            data: buf,
-        })
+        match reader.output_color_type() {
+            (png::ColorType::Rgba, png::BitDepth::Eight) => {
+                let mut buf = vec![
+                    Rgba8 {
+                        r: 0,
+                        g: 0,
+                        b: 0,
+                        a: 0
+                    };
+                    reader.output_buffer_size() / 4
+                ];
+                let data = bytemuck::cast_slice_mut(&mut buf);
+                reader.next_frame(data)?;
+                Ok(Self {
+                    width,
+                    height,
+                    data: buf,
+                })
+            }
+            (png::ColorType::GrayscaleAlpha, png::BitDepth::Eight) => {
+                // Grayscale images are decoded as [gray, alpha] pairs.
+                // Expand each to RGBA by copying gray into R, G, B.
+                let mut raw = vec![0u8; reader.output_buffer_size()];
+                reader.next_frame(&mut raw)?;
+                let data = raw
+                    .chunks_exact(2)
+                    .map(|c| Rgba8 {
+                        r: c[0],
+                        g: c[0],
+                        b: c[0],
+                        a: c[1],
+                    })
+                    .collect();
+                Ok(Self {
+                    width,
+                    height,
+                    data,
+                })
+            }
+            _ => Err(crate::Error::ImageNotRgba),
+        }
     }
 }
 
