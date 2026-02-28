@@ -266,7 +266,7 @@ pub fn render_html_report(config: &ReportConfig, diffs: &[PairResult]) -> kompar
                 meta name="generator" content=(format!("Kompari {}", env!("CARGO_PKG_VERSION")));
                 title { (title) }
                 style { (PreEscaped(CSS_STYLE)) }
-                link rel="icon" type="image/png" href=(embed_png_url(&ICON));
+                link rel="icon" type="image/png" href=(embed_png_url(ICON));
             }
             body {
                  div class="header" {

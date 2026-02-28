@@ -93,7 +93,7 @@ impl MinImage {
             (png::ColorType::GrayscaleAlpha, png::BitDepth::Eight) => {
                 // Grayscale images are decoded as [gray, alpha] pairs.
                 // Expand each to RGBA by copying gray into R, G, B.
-                let mut raw = vec![0u8; reader.output_buffer_size()];
+                let mut raw = vec![0_u8; reader.output_buffer_size()];
                 reader.next_frame(&mut raw)?;
                 let data = raw
                     .chunks_exact(2)
