@@ -1,7 +1,8 @@
 // Copyright 2024 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use kompari::{DirDiffConfig, ImageDifference, LeftRightError};
+use kompari::color::Rgba8;
+use kompari::{compare_images, DirDiffConfig, ImageDifference, LeftRightError, MinImage};
 use std::path::Path;
 
 fn create_test_diff_config() -> DirDiffConfig {
@@ -104,4 +105,34 @@ pub(crate) fn test_ignore_right_missing() {
             "size_error.png"
         ]
     );
+}
+
+#[test]
+fn test_pixel_distance_tolerance() {
+    let px = |r| Rgba8 {
+        r,
+        g: 0,
+        b: 0,
+        a: 255,
+    };
+    let left = MinImage {
+        width: 2,
+        height: 2,
+        data: vec![px(100), px(100), px(100), px(100)],
+    };
+    let right = MinImage {
+        width: 2,
+        height: 2,
+        // distances: 0, 1, 2, 3
+        data: vec![px(100), px(101), px(102), px(103)],
+    };
+    // With tolerance=2, only the pixel with distance 3 is different.
+    let diff = compare_images(&left, &right, 2);
+    assert!(matches!(
+        diff,
+        ImageDifference::Content {
+            n_different_pixels: 1,
+            ..
+        }
+    ));
 }

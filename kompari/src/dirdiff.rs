@@ -14,6 +14,13 @@ pub struct DirDiffConfig {
     ignore_left_missing: bool,
     ignore_right_missing: bool,
     filter_name: Option<String>,
+
+    /// The per-pixel distance that we tolerate. Only if the distance is greater than this will the
+    /// pixel be counted as being different.
+    ///
+    /// Because the pixel distance is the max per-channel distance, this is a per-channel
+    /// tolerance.
+    pixel_distance_tolerance: u8,
 }
 
 impl DirDiffConfig {
@@ -24,6 +31,7 @@ impl DirDiffConfig {
             ignore_left_missing: false,
             ignore_right_missing: false,
             filter_name: None,
+            pixel_distance_tolerance: 0,
         }
     }
 
@@ -41,10 +49,11 @@ impl DirDiffConfig {
             &self.right_path,
             self.filter_name.as_deref(),
         )?;
+        let tolerance = self.pixel_distance_tolerance;
         let diffs: Vec<_> = pairs
             .into_par_iter()
             .filter_map(|pair| {
-                let image_diff = compute_pair_diff(&pair);
+                let image_diff = compute_pair_diff(&pair, tolerance);
                 if matches!(image_diff, Ok(ImageDifference::None)) {
                     return None;
                 }
@@ -79,6 +88,10 @@ impl DirDiffConfig {
 
     pub fn set_filter_name(&mut self, value: Option<String>) {
         self.filter_name = value;
+    }
+
+    pub fn set_pixel_distance_tolerance(&mut self, value: u8) {
+        self.pixel_distance_tolerance = value;
     }
 }
 
@@ -188,7 +201,10 @@ pub(crate) fn pairs_from_paths(
         .collect())
 }
 
-fn compute_pair_diff(pair: &Pair) -> Result<ImageDifference, LeftRightError> {
+fn compute_pair_diff(
+    pair: &Pair,
+    pixel_distance_tolerance: u8,
+) -> Result<ImageDifference, LeftRightError> {
     let left = load_image(&pair.left);
     let right = load_image(&pair.right);
     let (left_image, right_image) = match (left, right) {
@@ -197,5 +213,9 @@ fn compute_pair_diff(pair: &Pair) -> Result<ImageDifference, LeftRightError> {
         (Ok(_), Err(e)) => return Err(LeftRightError::Right(e)),
         (Err(e1), Err(e2)) => return Err(LeftRightError::Both(Box::new((e1, e2)))),
     };
-    Ok(compare_images(&left_image, &right_image))
+    Ok(compare_images(
+        &left_image,
+        &right_image,
+        pixel_distance_tolerance,
+    ))
 }
