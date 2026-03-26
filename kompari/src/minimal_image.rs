@@ -31,9 +31,7 @@ impl std::fmt::Debug for MinImage {
 }
 
 impl MinImage {
-    /// Utility to decode from the png data provided by reader into a `MinImage`.
-    ///
-    /// This method assumes that the image is not grayscale.
+    /// Utility to decode from the png data provided by `reader` into a [`MinImage`].
     pub fn decode_from_png(mut reader: impl io::Read + io::Seek) -> Result<Self, crate::Error> {
         let start_location = reader.stream_position();
         let error = match Self::png_decode_internal(&mut reader) {
@@ -72,27 +70,50 @@ impl MinImage {
             // We treat all images as 8 bit per channel, for simplicity.
             .set_transformations(Transformations::normalize_to_color8() | Transformations::ALPHA);
         let mut reader = decoder.read_info()?;
-        let (png::ColorType::Rgba, png::BitDepth::Eight) = reader.output_color_type() else {
-            return Err(crate::Error::ImageNotRgba);
+        let (color_type, png::BitDepth::Eight) = reader.output_color_type() else {
+            unreachable!("Images get normalized to 8-bit grayscale or color, so `png::BitDepth::Eight` should always match");
         };
-
-        let mut buf = vec![
-            Rgba8 {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0
-            };
-            reader.output_buffer_size() / 4
-        ];
-        let data = bytemuck::cast_slice_mut(&mut buf);
         let (width, height) = reader.info().size();
-        reader.next_frame(data)?;
-        Ok(Self {
-            width,
-            height,
-            data: buf,
-        })
+
+        match color_type {
+            png::ColorType::Rgba => {
+                let mut buf = vec![
+                    Rgba8 {
+                        r: 0,
+                        g: 0,
+                        b: 0,
+                        a: 0,
+                    };
+                    reader.output_buffer_size() / 4
+                ];
+                let data = bytemuck::cast_slice_mut(&mut buf);
+                reader.next_frame(data)?;
+                Ok(Self {
+                    width,
+                    height,
+                    data: buf,
+                })
+            }
+            png::ColorType::GrayscaleAlpha => {
+                let mut raw = vec![0; reader.output_buffer_size()];
+                reader.next_frame(&mut raw)?;
+                let data = raw
+                    .chunks_exact(2)
+                    .map(|ga| Rgba8 {
+                        r: ga[0],
+                        g: ga[0],
+                        b: ga[0],
+                        a: ga[1],
+                    })
+                    .collect();
+                Ok(Self {
+                    width,
+                    height,
+                    data,
+                })
+            }
+            _ => unreachable!("Images get normalized to 8-bit grayscale or color, so the above two arms match all possible cases."),
+        }
     }
 }
 
