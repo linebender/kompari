@@ -185,7 +185,7 @@ pub fn compare_images(
             .iter()
             .zip(&right.data)
             .map(|(pl, pr)| {
-                if pl == pr {
+                if pixel_distance(*pl, *pr) <= tolerance {
                     if *pl == bg {
                         n_pixels -= 1;
                     };
