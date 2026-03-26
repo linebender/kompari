@@ -65,6 +65,11 @@ struct DiffArgs {
     /// Filter filenames by name
     #[arg(long)]
     filter: Option<String>,
+
+    /// Maximum per-pixel color distance to consider as matching (set to `0` to require exact
+    /// matches)
+    #[arg(long, default_value_t = 0)]
+    pixel_distance_tolerance: u8,
 }
 
 #[derive(Parser, Debug)]
@@ -88,6 +93,7 @@ fn make_diff_config(args: DiffArgs) -> (DirDiffConfig, ReportConfig) {
     diff_config.set_ignore_left_missing(args.ignore_left_missing);
     diff_config.set_ignore_right_missing(args.ignore_right_missing);
     diff_config.set_filter_name(args.filter);
+    diff_config.set_pixel_distance_tolerance(args.pixel_distance_tolerance);
 
     let mut report_config = ReportConfig::default();
     report_config.set_left_title(args.left_title);

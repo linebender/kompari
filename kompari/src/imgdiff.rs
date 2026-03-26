@@ -72,7 +72,11 @@ impl Debug for ImageDifference {
     }
 }
 
-fn compute_rg_diff_image(left: &MinImage, right: &MinImage) -> (MinImage, u64) {
+fn compute_rg_diff_image(
+    left: &MinImage,
+    right: &MinImage,
+    pixel_distance_tolerance: u8,
+) -> (MinImage, u64) {
     let mut distance_sum = 0;
     let diff_image_data = left
         .data
@@ -80,7 +84,10 @@ fn compute_rg_diff_image(left: &MinImage, right: &MinImage) -> (MinImage, u64) {
         .zip(&right.data)
         .map(|(&p1, &p2)| {
             let (diff_min, diff_max) = pixel_min_max_distance(p1, p2);
-            distance_sum += diff_max.max(diff_min) as u64;
+            let max_dist = diff_max.max(diff_min);
+            if max_dist > pixel_distance_tolerance {
+                distance_sum += max_dist as u64;
+            }
             if diff_min > diff_max {
                 Rgba8 {
                     r: diff_min,
@@ -106,14 +113,18 @@ fn compute_rg_diff_image(left: &MinImage, right: &MinImage) -> (MinImage, u64) {
     (image, distance_sum)
 }
 
-fn compute_overlay_diff_image(left: &MinImage, right: &MinImage) -> MinImage {
+fn compute_overlay_diff_image(
+    left: &MinImage,
+    right: &MinImage,
+    pixel_distance_tolerance: u8,
+) -> MinImage {
     let diff_image_data = left
         .data
         .iter()
         .zip(&right.data)
         .map(|(&p1, &p2)| {
             let distance = pixel_distance(p1, p2);
-            if distance > 0 {
+            if distance > pixel_distance_tolerance as u64 {
                 p2
             } else {
                 // Opaque pixels with no difference are made more transparent; we hide sufficiently translucenst ones
@@ -147,8 +158,15 @@ fn detect_background(image: &MinImage) -> Option<Rgba8> {
         .map(|(packed, _)| Rgba8::from_u32(packed))
 }
 
-/// Find differences between two images
-pub fn compare_images(left: &MinImage, right: &MinImage) -> ImageDifference {
+/// Find differences between two images.
+///
+/// Pixels with a distance of at most `pixel_distance_tolerance` are considered matching. Use `0`
+/// for exact comparison.
+pub fn compare_images(
+    left: &MinImage,
+    right: &MinImage,
+    pixel_distance_tolerance: u8,
+) -> ImageDifference {
     if left.width != right.width || left.height != right.height {
         return ImageDifference::SizeMismatch {
             left_size: (left.width, left.height),
@@ -161,12 +179,13 @@ pub fn compare_images(left: &MinImage, right: &MinImage) -> ImageDifference {
     let background = detect_background(left)
         .and_then(|bg1| detect_background(right).and_then(|bg2| (bg1 == bg2).then_some(bg1)));
 
+    let tolerance = pixel_distance_tolerance as u64;
     let n_different_pixels: u64 = if let Some(bg) = background {
         left.data
             .iter()
             .zip(&right.data)
             .map(|(pl, pr)| {
-                if pl == pr {
+                if pixel_distance(*pl, *pr) <= tolerance {
                     if *pl == bg {
                         n_pixels -= 1;
                     };
@@ -180,15 +199,22 @@ pub fn compare_images(left: &MinImage, right: &MinImage) -> ImageDifference {
         left.data
             .iter()
             .zip(&right.data)
-            .map(|(pl, pr)| if pl == pr { 0 } else { 1 })
+            .map(|(pl, pr)| {
+                if pixel_distance(*pl, *pr) <= tolerance {
+                    0
+                } else {
+                    1
+                }
+            })
             .sum()
     };
     if n_different_pixels == 0 {
         return ImageDifference::None;
     }
 
-    let (rg_diff_image, distance_sum) = compute_rg_diff_image(left, right);
-    let overlay_diff_image = compute_overlay_diff_image(left, right);
+    let (rg_diff_image, distance_sum) =
+        compute_rg_diff_image(left, right, pixel_distance_tolerance);
+    let overlay_diff_image = compute_overlay_diff_image(left, right, pixel_distance_tolerance);
     ImageDifference::Content {
         n_pixels,
         n_different_pixels,
