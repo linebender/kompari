@@ -15,7 +15,7 @@ You can find its changes [documented below](#010---2024-12-31).
 
 ## [Unreleased]
 
-This release has an [MSRV][] of 1.82.
+This release has an [MSRV][] of 1.85.
 
 - Initial release.
 
