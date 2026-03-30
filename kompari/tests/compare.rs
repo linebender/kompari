@@ -25,10 +25,11 @@ pub(crate) fn test_compare_dir() {
         [
             "bright.png",
             "changetext.png",
+            "grayscale.png",
             "left_missing.png",
             "right_missing.png",
             "shift.png",
-            "size_error.png"
+            "size_error.png",
         ]
     );
     assert!(matches!(
@@ -47,21 +48,28 @@ pub(crate) fn test_compare_dir() {
     ));
     assert!(matches!(
         res[2].image_diff,
-        Err(LeftRightError::Left(kompari::Error::FileNotFound(_)))
+        Ok(ImageDifference::Content {
+            n_different_pixels: 104,
+            ..
+        })
     ));
     assert!(matches!(
         res[3].image_diff,
-        Err(LeftRightError::Right(kompari::Error::FileNotFound(_)))
+        Err(LeftRightError::Left(kompari::Error::FileNotFound(_)))
     ));
     assert!(matches!(
         res[4].image_diff,
+        Err(LeftRightError::Right(kompari::Error::FileNotFound(_)))
+    ));
+    assert!(matches!(
+        res[5].image_diff,
         Ok(ImageDifference::Content {
             n_different_pixels: 3858,
             ..
         })
     ));
     assert!(matches!(
-        res[5].image_diff,
+        res[6].image_diff,
         Ok(ImageDifference::SizeMismatch {
             left_size: (850, 88),
             right_size: (147, 881)
@@ -81,6 +89,7 @@ pub(crate) fn test_ignore_left_missing() {
         [
             "bright.png",
             "changetext.png",
+            "grayscale.png",
             "right_missing.png",
             "shift.png",
             "size_error.png"
@@ -100,6 +109,7 @@ pub(crate) fn test_ignore_right_missing() {
         [
             "bright.png",
             "changetext.png",
+            "grayscale.png",
             "left_missing.png",
             "shift.png",
             "size_error.png"

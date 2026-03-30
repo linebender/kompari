@@ -28,8 +28,7 @@ pub fn optimize_png(data: Vec<u8>, opt_level: SizeOptimizationLevel) -> Vec<u8> 
         SizeOptimizationLevel::Fast => 2,
         SizeOptimizationLevel::High => 5,
     };
-    let mut options = oxipng::Options::from_preset(preset);
-    options.grayscale_reduction = false;
+    let options = oxipng::Options::from_preset(preset);
     oxipng::optimize_from_memory(&data[..], &options)
         .inspect_err(|e| log::warn!("PNG optimization failed: {}", e))
         .unwrap_or(data)
