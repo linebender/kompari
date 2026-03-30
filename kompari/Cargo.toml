@@ -21,7 +21,7 @@ targets = []
 
 [dependencies]
 # For the bulk of Kompari's functionality
-color = { version = "0.2.3", features = ["bytemuck"] }
+color = { version = "0.3.2", features = ["bytemuck"] }
 png = { workspace = true }
 thiserror = { workspace = true }
 walkdir = "2.5"
