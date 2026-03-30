@@ -71,8 +71,11 @@ impl MinImage {
             .set_transformations(Transformations::normalize_to_color8() | Transformations::ALPHA);
         let mut reader = decoder.read_info()?;
         let (width, height) = reader.info().size();
-        match reader.output_color_type() {
-            (png::ColorType::Rgba, png::BitDepth::Eight) => {
+        let (color_type, png::BitDepth::Eight) = reader.output_color_type() else {
+            unreachable!("Images get normalized to 8-bit grayscale or color, so `png::BitDepth::Eight` should always match");
+        };
+        match color_type {
+            png::ColorType::Rgba => {
                 let mut buf = vec![
                     Rgba8 {
                         r: 0,
@@ -90,7 +93,7 @@ impl MinImage {
                     data: buf,
                 })
             }
-            (png::ColorType::GrayscaleAlpha, png::BitDepth::Eight) => {
+            png::ColorType::GrayscaleAlpha => {
                 // Grayscale images are decoded as [gray, alpha] pairs.
                 // Expand each to RGBA by copying gray into R, G, B.
                 let mut raw = vec![0_u8; reader.output_buffer_size()];
@@ -110,7 +113,13 @@ impl MinImage {
                     data,
                 })
             }
-            _ => Err(crate::Error::ImageNotRgba),
+            // `Rgb`, `Grayscale`, and `Indexed` are not handled here explicitly because
+            // the `ALPHA` transformation sets `trns = true` unconditionally, which causes
+            // the png crate to expand:
+            //   - `Rgb` -> `Rgba`
+            //   - `Grayscale` -> `GrayscaleAlpha`
+            //   - `Indexed`-> `Rgba`
+            _ => unreachable!("Images get normalized to 8-bit grayscale or color, so the above two arms match all possible cases."),
         }
     }
 }
