@@ -12,16 +12,35 @@ license = "Apache-2.0 OR MIT"
 repository = "https://github.com/linebender/kompari"
 
 [workspace.dependencies]
-png = "0.17.16"
-thiserror = { version = "2" }
-clap = { version = "4.5", features = ["derive"] }
-oxipng = { version = "9.1", features = [
+kompari = { version = "0.1.0", path = "kompari" }
+kompari-html = { version = "0.1.0", path = "kompari-html" }
+kompari-tasks = { version = "0.1.0", path = "kompari-tasks" }
+
+assert_cmd = "2.2.0"
+axum = "0.8.8"
+base64 = "0.22.1"
+bytemuck = { version = "1.25.0", default-features = false }
+chrono = "0.4.44"
+clap = { version = "4.6.0", features = ["derive"] }
+color = "0.3.2"
+humansize = "2.1.3"
+imagesize = "0.13.0"
+indicatif = "0.17.11"
+log = "0.4.29"
+maud = "0.27.0"
+oxipng = { version = "9.1.5", features = [
     "parallel",
     "zopfli",
     "filetime",
 ], default-features = false }
-rayon = "1.10" # Make sure that we are using the version as in oxipng
-log = "0.4"
+png = "0.17.16"
+rayon = "1.11.0" # Make sure that we are using the version as in oxipng
+serde = "1.0.228"
+tempfile = "3.27.0"
+termcolor = "1.4.1"
+thiserror = { version = "2.0.18" }
+tokio = "1.50.0"
+walkdir = "2.5.0"
 
 [workspace.lints]
 # This one may vary depending on the project.

@@ -12,11 +12,12 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-kompari = { path = "../kompari" }
-kompari-html = { path = "../kompari-html" }
+kompari = { workspace = true }
+kompari-html = { workspace = true }
+kompari-tasks = { workspace = true }
+
 clap = { workspace = true }
-kompari-tasks = { path = "../kompari-tasks" }
 
 [dev-dependencies]
-assert_cmd = "2.0"
-tempfile = "3.15"
+assert_cmd = { workspace = true }
+tempfile = { workspace = true }

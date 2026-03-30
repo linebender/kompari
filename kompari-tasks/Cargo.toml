@@ -13,10 +13,11 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-kompari = { path = "../kompari" }
-kompari-html = { path = "../kompari-html" }
+kompari = { workspace = true }
+kompari-html = { workspace = true }
+
 clap = { workspace = true }
+humansize = { workspace = true }
+indicatif = { workspace = true }
 rayon = { workspace = true }
-termcolor = "1.4"
-humansize = "2.1"
-indicatif = "0.17"
+termcolor = { workspace = true }
