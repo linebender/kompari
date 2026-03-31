@@ -32,7 +32,7 @@ impl std::fmt::Debug for MinImage {
 
 impl MinImage {
     /// Utility to decode from the png data provided by reader into a `MinImage`.
-    pub fn decode_from_png(mut reader: impl io::Read + io::Seek) -> Result<Self, crate::Error> {
+    pub fn decode_from_png(mut reader: impl io::BufRead + io::Seek) -> Result<Self, crate::Error> {
         let start_location = reader.stream_position();
         let error = match Self::png_decode_internal(&mut reader) {
             Ok(ret) => return Ok(ret),
@@ -64,7 +64,7 @@ impl MinImage {
         Ok(())
     }
 
-    fn png_decode_internal(source: impl io::Read + io::Seek) -> Result<Self, crate::Error> {
+    fn png_decode_internal(source: impl io::BufRead + io::Seek) -> Result<Self, crate::Error> {
         let mut decoder = png::Decoder::new(source);
         decoder
             // We treat all images as 8 bit per channel, for simplicity.
@@ -83,7 +83,7 @@ impl MinImage {
                         b: 0,
                         a: 0
                     };
-                    reader.output_buffer_size() / 4
+                    reader.output_buffer_size().unwrap_or_default() / 4
                 ];
                 let data = bytemuck::cast_slice_mut(&mut buf);
                 reader.next_frame(data)?;
@@ -96,7 +96,7 @@ impl MinImage {
             png::ColorType::GrayscaleAlpha => {
                 // Grayscale images are decoded as [gray, alpha] pairs.
                 // Expand each to RGBA by copying gray into R, G, B.
-                let mut raw = vec![0_u8; reader.output_buffer_size()];
+                let mut raw = vec![0_u8; reader.output_buffer_size().unwrap_or_default()];
                 reader.next_frame(&mut raw)?;
                 let data = raw
                     .chunks_exact(2)

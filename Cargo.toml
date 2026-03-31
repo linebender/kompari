@@ -28,12 +28,11 @@ imagesize = { version = "0.14.0", default-features = false, features = ["png"] }
 indicatif = "0.18.4"
 log = "0.4.29"
 maud = "0.27.0"
-oxipng = { version = "9.1.5", features = [
+oxipng = { version = "10.1.0", features = [
     "parallel",
     "zopfli",
-    "filetime",
 ], default-features = false }
-png = "0.17.16"
+png = "0.18.1"
 rayon = "1.11.0" # Make sure that we are using the version as in oxipng
 serde = "1.0.228"
 tempfile = "3.27.0"
