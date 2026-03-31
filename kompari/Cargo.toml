@@ -20,15 +20,14 @@ default-target = "x86_64-unknown-linux-gnu"
 targets = []
 
 [dependencies]
-# For the bulk of Kompari's functionality
-color = { version = "0.3.2", features = ["bytemuck"] }
-png = { workspace = true }
-thiserror = { workspace = true }
-walkdir = "2.5"
+bytemuck = { workspace = true }
+color = { workspace = true, features = ["bytemuck"] }
 log = { workspace = true }
 oxipng = { workspace = true, optional = true }
+png = { workspace = true }
 rayon = { workspace = true }
-bytemuck = { default-features = false, version = "1.22.0" }
+thiserror = { workspace = true }
+walkdir = { workspace = true }
 
 [features]
 default = ["oxipng"]
