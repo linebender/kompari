@@ -42,10 +42,9 @@ tokio = "1.50.0"
 walkdir = "2.5.0"
 
 [workspace.lints]
-# This one may vary depending on the project.
 rust.unsafe_code = "forbid"
 
-# LINEBENDER LINT SET - Cargo.toml - v6
+# LINEBENDER LINT SET - Cargo.toml - v8
 # See https://linebender.org/wiki/canonical-lints/
 rust.keyword_idents_2024 = "forbid"
 rust.non_ascii_idents = "forbid"
@@ -54,21 +53,23 @@ rust.unsafe_op_in_unsafe_fn = "forbid"
 
 rust.elided_lifetimes_in_paths = "warn"
 rust.missing_debug_implementations = "warn"
-# rust.missing_docs = "warn"
 # TODO: We should document things
+# rust.missing_docs = "warn"
 rust.trivial_numeric_casts = "warn"
-rust.unexpected_cfgs = "warn"
 rust.unnameable_types = "warn"
 rust.unreachable_pub = "warn"
 rust.unused_import_braces = "warn"
 rust.unused_lifetimes = "warn"
 rust.unused_macro_rules = "warn"
+rust.unused_qualifications = "warn"
 
 clippy.too_many_arguments = "allow"
 
 clippy.allow_attributes_without_reason = "warn"
 clippy.cast_possible_truncation = "warn"
+clippy.cast_possible_wrap = "warn"
 clippy.collection_is_never_read = "warn"
+clippy.default_trait_access = "warn"
 clippy.dbg_macro = "warn"
 clippy.debug_assert_with_mut_call = "warn"
 clippy.doc_markdown = "warn"
