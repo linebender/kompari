@@ -1,13 +1,13 @@
 // Copyright 2025 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use crate::{render_html_report, ReportConfig};
+use crate::{ReportConfig, render_html_report};
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::post;
-use axum::{routing::get, Json, Router};
-use kompari::{bless_image, DirDiffConfig};
+use axum::{Json, Router, routing::get};
+use kompari::{DirDiffConfig, bless_image};
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::Arc;

@@ -72,7 +72,9 @@ impl MinImage {
         let mut reader = decoder.read_info()?;
         let (width, height) = reader.info().size();
         let (color_type, png::BitDepth::Eight) = reader.output_color_type() else {
-            unreachable!("Images get normalized to 8-bit grayscale or color, so `png::BitDepth::Eight` should always match");
+            unreachable!(
+                "Images get normalized to 8-bit grayscale or color, so `png::BitDepth::Eight` should always match"
+            );
         };
         match color_type {
             png::ColorType::Rgba => {
@@ -119,7 +121,9 @@ impl MinImage {
             //   - `Rgb` -> `Rgba`
             //   - `Grayscale` -> `GrayscaleAlpha`
             //   - `Indexed`-> `Rgba`
-            _ => unreachable!("Images get normalized to 8-bit grayscale or color, so the above two arms match all possible cases."),
+            _ => unreachable!(
+                "Images get normalized to 8-bit grayscale or color, so the above two arms match all possible cases."
+            ),
         }
     }
 }

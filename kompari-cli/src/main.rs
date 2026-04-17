@@ -14,7 +14,7 @@
 
 use clap::Parser;
 use kompari::DirDiffConfig;
-use kompari_html::{render_html_report, start_review_server, ReportConfig};
+use kompari_html::{ReportConfig, render_html_report, start_review_server};
 use kompari_tasks::check_size_optimizations;
 use std::path::PathBuf;
 

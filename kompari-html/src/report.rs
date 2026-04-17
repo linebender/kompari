@@ -1,13 +1,13 @@
 // Copyright 2024 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use crate::pageconsts::{CSS_STYLE, ICON, JS_CODE};
 use crate::ReportConfig;
+use crate::pageconsts::{CSS_STYLE, ICON, JS_CODE};
 use base64::prelude::*;
 use chrono::SubsecRound;
 use kompari::color::Rgba8;
 use kompari::{ImageDifference, LeftRightError, PairResult};
-use maud::{html, Markup, PreEscaped, DOCTYPE};
+use maud::{DOCTYPE, Markup, PreEscaped, html};
 use rayon::iter::IndexedParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;

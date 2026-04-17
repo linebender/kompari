@@ -1,7 +1,7 @@
 // Copyright 2025 the Kompari Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use crate::imgdiff::{compare_images, ImageDifference};
+use crate::imgdiff::{ImageDifference, compare_images};
 use crate::{list_image_dir_names, load_image};
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
