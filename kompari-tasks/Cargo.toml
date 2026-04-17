@@ -1,16 +1,20 @@
 [package]
 name = "kompari-tasks"
-
-description = "Supportive code for Xtasks based on Kompari"
+description = "Supportive code for Xtasks based on Kompari."
 keywords = ["image", "report", "diff", "tests"]
 categories = ["graphics", "multimedia::images", "development-tools::testing"]
-
 
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+# There are no platform specific docs.
+default-target = "x86_64-unknown-linux-gnu"
+targets = []
 
 [dependencies]
 kompari = { workspace = true }
@@ -21,3 +25,7 @@ humansize = { workspace = true }
 indicatif = { workspace = true }
 rayon = { workspace = true }
 termcolor = { workspace = true }
+
+# TODO: Enable lints
+#[lints]
+#workspace = true

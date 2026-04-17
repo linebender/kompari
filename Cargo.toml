@@ -12,9 +12,9 @@ license = "Apache-2.0 OR MIT"
 repository = "https://github.com/linebender/kompari"
 
 [workspace.dependencies]
-kompari = { version = "0.1.0", path = "kompari" }
-kompari-html = { version = "0.1.0", path = "kompari-html" }
-kompari-tasks = { version = "0.1.0", path = "kompari-tasks" }
+kompari = { version = "0.1.0", path = "kompari", default-features = false }
+kompari-html = { version = "0.1.0", path = "kompari-html", default-features = false }
+kompari-tasks = { version = "0.1.0", path = "kompari-tasks", default-features = false }
 
 assert_cmd = "2.2.0"
 axum = "0.8.8"
@@ -94,5 +94,6 @@ clippy.wildcard_dependencies = "warn"
 
 [profile.ci]
 inherits = "dev"
+debug = 0 # Don't compile debug info to reduce compilation artifact size for cache benefits.
 [profile.ci.package."*"]
 debug-assertions = true # Keep always on for dependencies for cache reuse.
