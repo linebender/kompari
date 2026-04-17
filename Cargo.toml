@@ -33,7 +33,7 @@ oxipng = { version = "10.1.0", features = [
     "zopfli",
 ], default-features = false }
 png = "0.18.1"
-rayon = "1.12.0" # Make sure that we are using the version as in oxipng
+rayon = "1.12.0"
 serde = "1.0.228"
 tempfile = "3.27.0"
 termcolor = "1.4.1"
