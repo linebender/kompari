@@ -691,19 +691,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "kompari-cli"
+name = "kompari_cli"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
  "clap",
  "kompari",
- "kompari-html",
- "kompari-tasks",
+ "kompari_html",
+ "kompari_tasks",
  "tempfile",
 ]
 
 [[package]]
-name = "kompari-html"
+name = "kompari_html"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -718,14 +718,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "kompari-tasks"
+name = "kompari_tasks"
 version = "0.1.0"
 dependencies = [
  "clap",
  "humansize",
  "indicatif",
  "kompari",
- "kompari-html",
+ "kompari_html",
  "rayon",
  "termcolor",
 ]

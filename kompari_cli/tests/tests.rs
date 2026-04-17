@@ -20,7 +20,7 @@ fn test_create_report() {
     let test_dir = test_assets_dir();
     let left = test_dir.join("left");
     let right = test_dir.join("right");
-    let mut cmd = Command::cargo_bin("kompari-cli").unwrap();
+    let mut cmd = Command::cargo_bin("kompari").unwrap();
     cmd.arg("report").arg(&left).arg(&right);
     cmd.current_dir(&workdir);
     cmd.assert().success();
@@ -51,7 +51,7 @@ fn test_filter_filenames() {
     let test_dir = test_assets_dir();
     let left = test_dir.join("left");
     let right = test_dir.join("right");
-    let mut cmd = Command::cargo_bin("kompari-cli").unwrap();
+    let mut cmd = Command::cargo_bin("kompari").unwrap();
     cmd.arg("report").arg("--filter").arg("change");
     cmd.arg(&left).arg(&right);
     cmd.current_dir(&workdir);
