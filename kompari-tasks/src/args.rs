@@ -32,9 +32,9 @@ pub enum SizeOptimization {
 impl SizeOptimization {
     pub fn to_level(&self) -> SizeOptimizationLevel {
         match self {
-            SizeOptimization::None => SizeOptimizationLevel::None,
-            SizeOptimization::Fast => SizeOptimizationLevel::Fast,
-            SizeOptimization::High => SizeOptimizationLevel::High,
+            Self::None => SizeOptimizationLevel::None,
+            Self::Fast => SizeOptimizationLevel::Fast,
+            Self::High => SizeOptimizationLevel::High,
         }
     }
 }

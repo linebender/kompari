@@ -26,6 +26,5 @@ indicatif = { workspace = true }
 rayon = { workspace = true }
 termcolor = { workspace = true }
 
-# TODO: Enable lints
-#[lints]
-#workspace = true
+[lints]
+workspace = true

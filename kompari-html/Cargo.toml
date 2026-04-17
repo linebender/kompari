@@ -28,6 +28,5 @@ rayon = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true }
 
-# TODO: Enable lints
-#[lints]
-#workspace = true
+[lints]
+workspace = true
