@@ -17,5 +17,5 @@ mod optimizations;
 mod task;
 
 pub use args::Args;
-pub use optimizations::{check_size_optimizations, OptimizationResult};
+pub use optimizations::{OptimizationResult, check_size_optimizations};
 pub use task::{Actions, Task};

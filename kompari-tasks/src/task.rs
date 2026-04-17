@@ -3,8 +3,8 @@
 
 use crate::args::{Args, Command, DeadSnapshotArgs};
 use crate::check_size_optimizations;
-use kompari::{list_image_dir, list_image_dir_names, DirDiffConfig};
-use kompari_html::{render_html_report, start_review_server, ReportConfig};
+use kompari::{DirDiffConfig, list_image_dir, list_image_dir_names};
+use kompari_html::{ReportConfig, render_html_report, start_review_server};
 use std::collections::BTreeSet;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};

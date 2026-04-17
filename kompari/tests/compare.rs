@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use kompari::color::Rgba8;
-use kompari::{compare_images, DirDiffConfig, ImageDifference, LeftRightError, MinImage};
+use kompari::{DirDiffConfig, ImageDifference, LeftRightError, MinImage, compare_images};
 use std::path::Path;
 
 fn create_test_diff_config() -> DirDiffConfig {
