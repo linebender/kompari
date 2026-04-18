@@ -9,14 +9,11 @@ use std::collections::BTreeSet;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 
-pub trait Actions {
+pub trait Actions: std::fmt::Debug {
     fn generate_all_tests(&self) -> kompari::Result<()>;
 }
 
-#[expect(
-    missing_debug_implementations,
-    reason = "actions don't implement Debug"
-)]
+#[derive(Debug)]
 pub struct Task {
     diff_config: DirDiffConfig,
     report_config: ReportConfig,
