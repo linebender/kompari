@@ -14,8 +14,8 @@ use rayon::iter::ParallelIterator;
 use std::cmp::min;
 use std::path::Path;
 
-const IMAGE_SIZE_LIMIT: u32 = 400;
-const IMAGE_PIXELIZE_LIMIT: u32 = 400;
+const IMAGE_SIZE_LIMIT: usize = 400;
+const IMAGE_PIXELIZE_LIMIT: usize = 400;
 
 fn embed_png_url(data: &[u8]) -> String {
     let mut url = "data:image/png;base64,".to_string();
@@ -44,11 +44,11 @@ fn render_image(
                     imagesize::size(path).map_err(|e| kompari::Error::GenericError(Box::new(e)))?,
                 )
             };
-            let (w, h) = html_size(size.width as u32, size.height as u32, IMAGE_SIZE_LIMIT);
+            let (w, h) = html_size(size.width, size.height, IMAGE_SIZE_LIMIT);
             html! {
                 img class="zoom" src=(path)
                     width=[w] height=[h]
-                    onclick=(open_image_dialog(size.width as u32, size.height as u32));
+                    onclick=(open_image_dialog(size.width, size.height));
             }
         }
         Some(kompari::Error::FileNotFound(_)) => {
@@ -60,7 +60,7 @@ fn render_image(
     })
 }
 
-pub fn html_size(width: u32, height: u32, size_limit: u32) -> (Option<u32>, Option<u32>) {
+fn html_size(width: usize, height: usize, size_limit: usize) -> (Option<usize>, Option<usize>) {
     if width > height {
         (Some(width.min(size_limit)), None)
     } else {
@@ -68,7 +68,7 @@ pub fn html_size(width: u32, height: u32, size_limit: u32) -> (Option<u32>, Opti
     }
 }
 
-fn open_image_dialog(width: u32, height: u32) -> &'static str {
+fn open_image_dialog(width: usize, height: usize) -> &'static str {
     if min(width, height) < IMAGE_PIXELIZE_LIMIT {
         "openImageDialog(this, true)"
     } else {
@@ -87,8 +87,8 @@ fn render_difference_image(
                 @for (idx, di) in diff_images.iter().enumerate() {
                     @let (w, h, data) = {
                         let (w, h) = html_size(
-                            di.image.width,
-                            di.image.height,
+                            di.image.width as usize,
+                            di.image.height as usize,
                             IMAGE_SIZE_LIMIT,
                         );
                         let data = kompari::image_to_png(&di.image, config.size_optimization);
@@ -100,7 +100,7 @@ fn render_difference_image(
                        class="zoom"
                        src=(embed_png_url(&data))
                        width=[w] height=[h]
-                       onclick=(open_image_dialog(di.image.width, di.image.height));
+                       onclick=(open_image_dialog(di.image.width as usize, di.image.height as usize));
                 }
                 div class="tabs" {
                     @for (idx, img) in diff_images.iter().enumerate() {

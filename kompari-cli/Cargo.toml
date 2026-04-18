@@ -27,6 +27,5 @@ clap = { workspace = true }
 assert_cmd = { workspace = true }
 tempfile = { workspace = true }
 
-# TODO: Enable lints
-#[lints]
-#workspace = true
+[lints]
+workspace = true

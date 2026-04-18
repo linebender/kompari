@@ -20,7 +20,7 @@ pub struct OptimizationResult {
     pub improvement_limit_breached: bool,
 }
 
-pub fn check_file_optimizations(
+fn check_file_optimizations(
     path: PathBuf,
     args: &SizeCheckArgs,
 ) -> kompari::Result<Option<OptimizationResult>> {
@@ -77,7 +77,7 @@ pub fn check_size_optimizations(dir_path: &Path, args: &SizeCheckArgs) -> kompar
     Ok(())
 }
 
-pub fn print_size_optimization_results(
+fn print_size_optimization_results(
     results: &[OptimizationResult],
     optimize: bool,
 ) -> kompari::Result<bool> {

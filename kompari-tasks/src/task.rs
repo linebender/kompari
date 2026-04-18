@@ -9,10 +9,11 @@ use std::collections::BTreeSet;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 
-pub trait Actions {
+pub trait Actions: std::fmt::Debug {
     fn generate_all_tests(&self) -> kompari::Result<()>;
 }
 
+#[derive(Debug)]
 pub struct Task {
     diff_config: DirDiffConfig,
     report_config: ReportConfig,
@@ -25,7 +26,7 @@ impl Task {
         let mut report_config = ReportConfig::default();
         report_config.set_left_title("Reference");
         report_config.set_right_title("Current");
-        Task {
+        Self {
             diff_config,
             report_config,
             report_output_path: "report.html".into(),
@@ -61,7 +62,7 @@ impl Task {
             Command::Review(args) => {
                 self.report_config
                     .set_size_optimization(args.optimize_size.to_level());
-                start_review_server(&self.diff_config, &self.report_config, args.port)?
+                start_review_server(&self.diff_config, &self.report_config, args.port)?;
             }
             Command::Clean => {
                 clean_image_dir(self.diff_config.right_path())?;
@@ -123,9 +124,9 @@ fn process_dead_snapshots(
             for path in &dead_snapshots {
                 std::fs::remove_file(path)?;
             }
-            println!("Dead snapshots removed")
+            println!("Dead snapshots removed");
         } else {
-            println!("Run the command with '--remove' to remove the files")
+            println!("Run the command with '--remove' to remove the files");
         }
     }
     clean_image_dir(current_path)?;

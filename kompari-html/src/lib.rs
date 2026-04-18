@@ -27,7 +27,7 @@ pub struct ReportConfig {
 
 impl Default for ReportConfig {
     fn default() -> Self {
-        ReportConfig {
+        Self {
             left_title: "Left image".to_string(),
             right_title: "Right image".to_string(),
             embed_images: false,
@@ -39,19 +39,19 @@ impl Default for ReportConfig {
 
 impl ReportConfig {
     pub fn set_left_title(&mut self, value: impl ToString) {
-        self.left_title = value.to_string()
+        self.left_title = value.to_string();
     }
     pub fn set_right_title(&mut self, value: impl ToString) {
-        self.right_title = value.to_string()
+        self.right_title = value.to_string();
     }
     pub fn set_embed_images(&mut self, value: bool) {
-        self.embed_images = value
+        self.embed_images = value;
     }
     pub fn set_size_optimization(&mut self, value: SizeOptimizationLevel) {
-        self.size_optimization = value
+        self.size_optimization = value;
     }
     pub fn set_review(&mut self, value: bool) {
-        self.is_review = value
+        self.is_review = value;
     }
 }
 

@@ -119,7 +119,7 @@ fn main() -> kompari::Result<()> {
         Args::Review(args) => {
             let (diff_config, mut report_config) = make_diff_config(args.diff_args);
             report_config.set_size_optimization(args.args.optimize_size.to_level());
-            start_review_server(&diff_config, &report_config, args.args.port)?
+            start_review_server(&diff_config, &report_config, args.args.port)?;
         }
         Args::SizeCheck(args) => {
             check_size_optimizations(&args.path, &args.args)?;
