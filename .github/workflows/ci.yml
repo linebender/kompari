@@ -10,10 +10,10 @@ env:
   # the Unreleased section of CHANGELOG.md, plus all the README.md files of the affected packages.
   RUST_MIN_VER: "1.85"
   # List of packages that can not target Wasm.
-  NO_WASM_PKGS: "--exclude kompari-cli --exclude kompari-html --exclude kompari-tasks"
+  NO_WASM_PKGS: "--exclude kompari_cli --exclude kompari_html --exclude kompari_tasks"
   # List of packages that will be checked with the minimum supported Rust version.
   # This should be limited to packages that are intended for publishing.
-  RUST_MIN_VER_PKGS: "-p kompari -p kompari-html -p kompari-tasks"
+  RUST_MIN_VER_PKGS: "-p kompari -p kompari_cli -p kompari_html -p kompari_tasks"
   # Whether the workspace contains Rust code using the debug_assertions configuration option.
   USING_DEBUG_ASSERTIONS: "false"
 

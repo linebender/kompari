@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["kompari", "kompari-cli", "kompari-html", "kompari-tasks"]
+members = ["kompari", "kompari_cli", "kompari_html", "kompari_tasks"]
 
 [workspace.package]
 version = "0.1.0"
@@ -13,8 +13,8 @@ repository = "https://github.com/linebender/kompari"
 
 [workspace.dependencies]
 kompari = { version = "0.1.0", path = "kompari", default-features = false }
-kompari-html = { version = "0.1.0", path = "kompari-html", default-features = false }
-kompari-tasks = { version = "0.1.0", path = "kompari-tasks", default-features = false }
+kompari_html = { version = "0.1.0", path = "kompari_html", default-features = false }
+kompari_tasks = { version = "0.1.0", path = "kompari_tasks", default-features = false }
 
 assert_cmd = "2.2.0"
 axum = "0.8.9"

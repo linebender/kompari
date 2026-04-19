@@ -1,6 +1,6 @@
 [package]
-name = "kompari-cli"
-description = "CLI for detecting and reporting image differences."
+name = "kompari_tasks"
+description = "Supportive code for Xtasks based on Kompari."
 keywords = ["image", "report", "diff", "tests"]
 categories = ["graphics", "multimedia::images", "development-tools::testing"]
 
@@ -18,14 +18,13 @@ targets = []
 
 [dependencies]
 kompari = { workspace = true }
-kompari-html = { workspace = true }
-kompari-tasks = { workspace = true }
+kompari_html = { workspace = true }
 
 clap = { workspace = true }
-
-[dev-dependencies]
-assert_cmd = { workspace = true }
-tempfile = { workspace = true }
+humansize = { workspace = true }
+indicatif = { workspace = true }
+rayon = { workspace = true }
+termcolor = { workspace = true }
 
 [lints]
 workspace = true

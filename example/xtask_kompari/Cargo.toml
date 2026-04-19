@@ -7,4 +7,4 @@ edition = "2021"
 demolib = { path = "../demolib" }
 clap = { version = "4.5", features = ["derive"] }
 kompari = { path = "../../kompari" }
-kompari-tasks = { path = "../../kompari-tasks" }
+kompari_tasks = { path = "../../kompari_tasks" }
